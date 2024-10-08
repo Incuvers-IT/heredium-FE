@@ -23,7 +23,7 @@
       </div>
     </div>
     <div class="top-menus mb-16">
-      <SLink to="/admin/common/membership/add" class="mr-28">등록</SLink>
+      <SLink to="/admin/common/membership/edit" class="mr-28">등록</SLink>
       <SDropdown v-model="queryOptions.size" :option-list="sizeOptionList" @change="onSelectSizeChange"
         >리스트 수:</SDropdown
       >

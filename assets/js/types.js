@@ -280,3 +280,39 @@ export const ADMIN_DETAIL = {
   phone: '',
   auth: 'SUPERVISOR'
 };
+
+export const POST_DETAIL = {
+  name: '',
+  memberships: {
+    memberships: []
+  },
+  detail_image: {
+    image_url: '',
+    original_file_name: ''
+  },
+  is_enabled: true,
+  navigation_link: '',
+  content_detail: '',
+  thumbnail_url: {
+    small: '',
+    medium: '',
+    large: ''
+  }
+};
+
+export const COUPON_DEFAULT = {
+  name: '',
+  coupon_type: '',
+  discount_percent: '',
+  period_in_days: 0,
+  image_url: '',
+  number_of_uses: 1,
+  is_permanent: false
+};
+
+export const MEMBERSHIP_DEFAULT = {
+  name: '',
+  price: 0,
+  checked: false,
+  coupons: [{ ...COUPON_DEFAULT }]
+};
