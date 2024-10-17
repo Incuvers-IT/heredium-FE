@@ -20,7 +20,7 @@
             <div class="head">멤버십</div>
             <MembershipInfor :data-merbership="dataMembership" />
           </div>
-          <div v-if="dataListCoupon" class="box-coupon">
+          <div v-if="availableCouponsList" class="box-coupon">
             <div class="head only-pc">쿠폰함</div>
             <div class="head-mobile only-mobile">
               <div class="head">쿠폰함</div>
@@ -29,7 +29,7 @@
               </NuxtLink>
             </div>
             <div class="contents">
-              <CouponList :data="dataListCoupon" />
+              <CouponList :data="availableCouponsList" />
             </div>
           </div>
         </div>
@@ -46,32 +46,41 @@ import SideBarMyPage from '~/components/user/page/SideBarMyPage.vue';
 export default {
   name: 'MembershipAndCouponPage',
   components: { SideBarMyPage, MembershipInfor, CouponList },
-  async asyncData({ $axios }) {
-    let dataListCoupon = null;
-    let dataMembership = null;
-    try {
-      dataMembership = await $axios.$get('/user/membership/info');
-    } catch (error) {
-      dataMembership = null;
-    }
-
-    try {
-      dataListCoupon = await $axios.$get('/user/coupons/usage');
-    } catch (error) {
-      dataListCoupon = null;
-    }
-
-    return {
-      dataListCoupon,
-      dataMembership
-    };
-  },
   data() {
     return {
-      dataListCoupon: null,
       dataMembership: null,
+      availableCouponsList: null,
       baseUrl: '/mypage/purchase/membership/coupon-histoty'
     };
+  },
+  mounted() {
+    this.getCouponList();
+    this.getMembershipInfor();
+  },
+  methods: {
+    async getCouponList() {
+      try {
+        const dataListCoupon = await this.$axios.$get('/user/coupons/usage');
+        const availableCouponsList = dataListCoupon
+          .map((item) => ({
+            ...item,
+            unused_coupons: item.unused_coupons.filter((coupon) => !coupon.is_expired)
+          }))
+          .filter((item) => item.unused_coupons.length > 0);
+
+        this.availableCouponsList = availableCouponsList;
+      } catch (error) {
+        // show empty coupon
+      }
+    },
+    async getMembershipInfor() {
+      try {
+        const dataMembership = await this.$axios.$get('/user/membership/info');
+        this.dataMembership = dataMembership;
+      } catch (error) {
+        // show empty
+      }
+    }
   }
 };
 </script>
