@@ -1,6 +1,6 @@
 <template>
-  <div v-if="isLogged && totalCoupon" class="custom-button">
-    <UButton button-type="secondary" w-size="100" @click="handleOpenCouponList">
+  <div v-if="isLogged" class="custom-button">
+    <UButton button-type="secondary" w-size="100" :disabled="!orderPrice" @click="handleOpenCouponList">
       멤버십 쿠폰 적용(잔여수량: {{ totalCoupon }})
     </UButton>
     <KeepAlive>
@@ -53,6 +53,11 @@ export default {
       validator(value) {
         return typeof value === 'number' || value === null;
       }
+    },
+    orderPrice: {
+      type: Number,
+      required: true,
+      default: 0
     }
   },
   data() {
@@ -64,11 +69,13 @@ export default {
       selectedCouponId: null
     };
   },
-
-  computed: {},
-
-  watch: {},
-
+  watch: {
+    initCouponId(updateCouponId) {
+      if (updateCouponId !== this.selectedCouponId) {
+        this.selectedCouponId = updateCouponId;
+      }
+    }
+  },
   created() {
     this.selectedCouponId = this.initCouponId;
   },
@@ -78,6 +85,7 @@ export default {
     this.isLogged = isLogged;
     if (isLogged) {
       this.getCouponList();
+      this.handleUpdateCoupon();
     }
   },
 

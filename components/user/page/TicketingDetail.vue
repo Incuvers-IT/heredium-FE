@@ -158,12 +158,17 @@
                       </p>
                     </div>
                   </div>
-                  <UOrderCoupon :coupon-type="type" :init-coupon-id="coupon?.id" @update-coupon="handleUpdateCoupon" />
+                  <UOrderCoupon
+                    :coupon-type="type"
+                    :init-coupon-id="coupon?.id"
+                    :order-price="rawPrice"
+                    @update-coupon="handleUpdateCoupon"
+                  />
                 </div>
                 <div class="row-price">
                   <div class="label">합계</div>
                   <div class="cell-price">
-                    <b>{{ getTotalPrice.toLocaleString('en') }}</b
+                    <b>{{ rawPrice.toLocaleString('en') }}</b
                     >원
                   </div>
                 </div>
@@ -395,12 +400,16 @@ export default {
         ? 'coffees'
         : '';
     },
-    getTotalPrice() {
-      return this.detailData.prices.reduce((prev, cur) => {
+    rawPrice() {
+      const sumPrice = this.detailData.prices.reduce((prev, cur) => {
         const curPrice = this.isHana && cur.discounts[0] ? cur.discounts[0].price : cur.price;
 
         return prev + cur.count * curPrice;
       }, 0);
+      if (!sumPrice) {
+        this.handleResetCoupon();
+      }
+      return sumPrice;
     },
     isFree() {
       return this.detailData.prices.filter((item) => item.count > 0).reduce((cur, pre) => cur + pre.price, 0) === 0;
@@ -426,9 +435,9 @@ export default {
     },
     paymentPrice() {
       if (!this.coupon?.id || !this.totalDiscount) {
-        return this.getTotalPrice;
+        return this.rawPrice;
       }
-      return this.getTotalPrice - this.totalDiscount;
+      return this.rawPrice - this.totalDiscount;
     }
   },
   created() {
@@ -623,7 +632,7 @@ export default {
             id: this.initDetailData.id,
             isFree,
             title: this.initDetailData.title,
-            totalPrice: this.getTotalPrice
+            totalPrice: this.rawPrice
           });
           await this.$router.push('/ticketing/hana/pay');
         } else {
@@ -647,7 +656,7 @@ export default {
         isFree,
         id: this.id,
         ticketPageUrl: this.$route.path,
-        totalPrice: this.getTotalPrice
+        totalPrice: this.rawPrice
       };
 
       this.$store.commit('service/non-member-pay/setPayTargetData', nonMemberOrderInfo);
@@ -655,6 +664,9 @@ export default {
     },
     handleUpdateCoupon(coupon) {
       this.coupon = cloneDeep(coupon);
+    },
+    handleResetCoupon() {
+      this.coupon = null;
     }
   }
 };
