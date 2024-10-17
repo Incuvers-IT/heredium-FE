@@ -1,6 +1,6 @@
 <template>
   <div v-if="isLogged" class="custom-button">
-    <UButton button-type="secondary" w-size="100" :disabled="!orderPrice" @click="handleOpenCouponList">
+    <UButton button-type="secondary" w-size="100" :disabled="disableSelectCoupon" @click="handleOpenCouponList">
       멤버십 쿠폰 적용(잔여수량: {{ totalCoupon }})
     </UButton>
     <KeepAlive>
@@ -68,6 +68,11 @@ export default {
       totalCoupon: null,
       selectedCouponId: null
     };
+  },
+  computed: {
+    disableSelectCoupon() {
+      return !this.totalCoupon || !this.orderPrice;
+    }
   },
   watch: {
     initCouponId(updateCouponId) {
