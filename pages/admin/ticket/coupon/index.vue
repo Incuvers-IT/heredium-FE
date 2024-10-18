@@ -35,7 +35,7 @@
     <div class="bottom-div">
       <div class="title-menu">
         <div class="left">
-          <SButton button-type="primary">+ 선택추가</SButton>
+          <SButton button-type="primary" @click="addUser"> + 선택추가</SButton>
         </div>
         <div class="right">
           <SButton class="mr-16">엑셀 일괄업로드</SButton>
@@ -105,6 +105,89 @@
         </template>
       </SPageable>
     </div>
+    <div class="mb-36">
+      <div class="title-menu">
+        <div class="left">
+          <h3>선택 계정 리스트</h3>
+          <span class="ml-8">({{ selectedData.userList.length }}/{{ selectedData.maxCount }})</span>
+        </div>
+        <div class="right">
+          <SButton button-type="transport-b" class="mr-8" @click="removeSelectedUser(true)">전체 삭제</SButton>
+          <SButton button-type="transport-b" class="mr-16" @click="removeSelectedUser()">삭제</SButton>
+          <SDropdown v-model="selectedData.pageSize" :option-list="optionList" @change="onSelectSizeChange"
+            >리스트 수:</SDropdown
+          >
+        </div>
+      </div>
+      <SPagination
+        :table-data="selectedUserList"
+        :table-option="{ currentPage: selectedData.tablePage, pageSize: selectedData.pageSize }"
+        @onPageChange="onPageChange"
+      >
+        <template #data="{ data }">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>
+                  <SCheckbox v-model="selectedData.isCheckedAll" @input="setSelectedCheckedAll" />
+                </th>
+                <th>NO</th>
+                <th>멤버십</th>
+                <th>아이디</th>
+                <th>이름</th>
+                <th>연락처</th>
+                <th>가입일시</th>
+                <th>최근로그인</th>
+                <th>입장횟수</th>
+                <th>생성일시</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="!data || !data[0]">
+                <td colspan="100%"><div>리스트가 없습니다.</div></td>
+              </tr>
+              <tr v-for="item in data" :key="item.id" @click="onSelectedCheck(item.id)">
+                <td>
+                  <div>
+                    <SCheckbox v-model="item.isChecked" />
+                  </div>
+                </td>
+                <td>
+                  <div>{{ item.index }}</div>
+                </td>
+                <td>
+                  <div class="text-left">{{ item.membershipRegistrationInfo?.name }}</div>
+                </td>
+                <td>
+                  <div>{{ item.id }}</div>
+                </td>
+                <td>
+                  <div>{{ item.name }}</div>
+                </td>
+                <td>
+                  <div>{{ item.contact_number }}</div>
+                </td>
+                <td>
+                  <div>{{ item.signup_date }}</div>
+                </td>
+                <td>
+                  <div>{{ item.lastLoginDate }}</div>
+                </td>
+                <td>
+                  <div>{{ item.numberOfEntries }}</div>
+                </td>
+                <td>
+                  <div>{{ item.createdDate }}</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </template>
+      </SPagination>
+    </div>
+    <div class="bottom">
+      <SButton button-type="primary" :disabled="isConfirmPending" @click="issuedTicket">발급</SButton>
+    </div>
     <SDialogModal :is-show="isShowErrorModal" @close="isShowErrorModal = false">
       <template #content>{{ errorMsg }}</template>
       <template #modal-btn2>
@@ -112,7 +195,7 @@
       </template>
     </SDialogModal>
     <SDialogModal :is-show="isShowDoneModal" @close="refreshPage">
-      <template #content>초대권이 발급되었습니다.</template>
+      <template #content>쿠폰이 발급되었습니다.</template>
       <template #modal-btn2>
         <SButton button-type="primary" @click="refreshPage">확인</SButton>
       </template>
@@ -130,14 +213,16 @@ import SDatepicker from '~/components/admin/commons/SDatepicker';
 import { SEARCH_USER_TYPE, GENDER_TYPE, COUPON_STATE_TYPE } from '~/assets/js/types';
 import SCheckbox from '~/components/admin/commons/SCheckbox';
 import { threeCommaNum } from '~/assets/js/commons';
+import SPagination from '~/components/admin/commons/SPagination';
 import SDialogModal from '~/components/admin/modal/SDialogModal';
 import CouponEditor from '~/components/admin/page/membership/CouponEditor.vue';
 import SCheckboxGroup from '~/components/admin/commons/SCheckboxGroup.vue';
 
 export default {
-  name: 'InvitationPage',
+  name: 'CouponPage',
   components: {
     SDialogModal,
+    SPagination,
     SCheckbox,
     SDatepicker,
     SDropdown,
@@ -157,7 +242,6 @@ export default {
   },
   data() {
     return {
-      dateOptionList: [{ value: 'SIGNUP_DATE', label: 'Signup Date' }],
       selectedKind: null,
       exposeKindList: [
         {
@@ -174,7 +258,7 @@ export default {
       exposeProList: [],
       queryOptions: {
         page: 0,
-        size: 20,
+        size: 5,
         startDate: '',
         endDate: '',
         gender: null,
@@ -479,7 +563,6 @@ export default {
     column-gap: 8px;
   }
 }
-
 .search {
   width: 100%;
   padding: 2.8rem 3.2rem;
