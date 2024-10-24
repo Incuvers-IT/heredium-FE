@@ -97,8 +97,8 @@ export default {
     position: relative;
     display: block;
     width: 100%;
-    height: 0;
-    padding-bottom: 63.92857142857143%;
+    height: 300px;
+    /* padding-bottom: 63.92857142857143%; */
     background-color: rgba(221, 221, 221, 0.5);
     border-radius: 0.3rem;
     cursor: pointer;
@@ -112,7 +112,8 @@ export default {
       width: 100%;
       height: 100%;
       border-radius: 0.3rem;
-      object-fit: cover;
+      object-fit: contain;
+      /* object-fit: cover; */
       object-position: center;
       background-color: #d9d9d9;
     }

@@ -106,6 +106,9 @@ export default {
       case 'x-large':
         width = 21.8;
         break;
+      case 'xx-large':
+        width = 28;
+        break;
       default:
         width = 14.4;
         break;

@@ -290,21 +290,29 @@ export const ADMIN_DETAIL = {
   auth: 'SUPERVISOR'
 };
 
+export const EVENT_DEFAULT = {
+  eventType: 'ongoing_exhibition_count',
+  quantity: 0
+}
+
+
 export const POST_DETAIL = {
   name: '',
   memberships: [],
-  detail_image: {
-    image_url: '',
+  note_image: {
+    note_image_url: '',
     original_file_name: ''
   },
   is_enabled: true,
-  navigation_link: '',
   content_detail: '',
   thumbnail_urls: {
     small: '',
     medium: '',
     large: ''
-  }
+  },
+  end_date: '',
+  start_date: '',
+  events:[{...EVENT_DEFAULT}],
 };
 
 export const COUPON_DEFAULT = {
@@ -322,6 +330,7 @@ export const COUPON_DEFAULT = {
 export const MEMBERSHIP_DEFAULT = {
   name: '',
   price: 0,
+  image_url: '',
   checked: false,
   coupons: [{ ...COUPON_DEFAULT }]
 };

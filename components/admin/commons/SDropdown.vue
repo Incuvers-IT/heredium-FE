@@ -94,7 +94,7 @@ export default {
         width = 20;
         break;
       case 'x-large':
-        width = 46;
+        width = 40;
         break;
       default:
         width = 15.2;

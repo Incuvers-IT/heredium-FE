@@ -8,7 +8,6 @@
         <SImageUploadRepresentative
           :class="{ 'is-error': feedback?.thumbnailUrl }"
           :image-src="detailData.thumbnail_urls?.small"
-          :disabled="isEdit"
           type="PROJECT_THUMBNAIL"
           @image-uploaded="updateThumbnail"
           @image-removed="removeThumbnail"
@@ -23,35 +22,40 @@
               maxlength="100"
               w-size="xx-large"
               :class="{ 'is-error': feedback?.name }"
-              :disabled="isEdit"
             />
           </div>
         </div>
         <div class="row">
-          <label>배경 이미지<b class="must">*</b></label>
-          <div class="has-btn">
-            <div class="mr-28">
-              <SInput
-                v-model="detailData.detail_image.original_file_name"
-                w-size="xx-large"
-                readonly
-                :class="{ 'is-error': feedback?.detailImage }"
+          <label>내용(선택) </label>
+          <div>
+            <div>
+              <EventTypeSelection
+                v-for="(event, index) in detailData.events"
+                :key="index"
+                :event="event"
+                @update-event="(e) => handleUpdateEvent(e, index)"
+                @delete-event="handleDeleteEvent(index)"
               />
-              <input
-                ref="detailImage"
-                type="file"
-                accept=".jpg, .jpeg, .png, .gif"
-                class="is-blind"
-                :disabled="isEdit"
-                @change="updateDetailImage($event)"
-              />
-              <p class="sub">1920px x 800px, 5MB이하의 PNG, JPG, JPEG 파일</p>
             </div>
-            <SButton v-if="!detailData.detail_image?.image_url" @click="$refs.detailImage.click()">파일 첨부</SButton>
-            <template v-else>
-              <SButton button-type="primary" class="mr-8" @click="downloadFile">다운로드</SButton>
-              <SButton :disabled="isEdit" @click="removeDetailImage">삭제</SButton>
-            </template>
+            <SButton button-type="primary" w-size="medium" @click="handleAddEvent"> Add </SButton>
+          </div>
+        </div>
+        <div class="row">
+          <label>게시물 등록 기간 / 오픈일</label>
+          <div>
+            <SDatepicker
+              v-model="detailData.start_date"
+              :class="{ 'is-error': feedback?.start_date }"
+              :max="detailData.end_date"
+              w-size="xx-large"
+            />
+            <span class="ml-8 mr-8">~</span>
+            <SDatepicker
+              v-model="detailData.end_date"
+              :class="{ 'is-error': feedback?.end_date }"
+              :min="detailData.start_date"
+              w-size="xx-large"
+            />
           </div>
         </div>
         <div class="row">
@@ -68,7 +72,7 @@
           <h3 class="mb-24">입장권 정보<b class="must">*</b></h3>
           <div>
             <div class="grid-table" :class="{ 'is-error': feedback?.emptyMemberships }">
-              <AddMembershipOption :disabled="isEdit" @add-membership-option="handlePushMembershipOption" />
+              <AddMembershipOption @add-membership-option="handlePushMembershipOption" />
               <!-- HEADER -->
               <div class="grid-table-header">노출</div>
               <div class="grid-table-header">멤버십 이름</div>
@@ -85,12 +89,13 @@
                 <div :key="`membership_${membershipIndex}_price`" class="grid-table-body membership-price">
                   {{ toKoreaCurrency(membership.price) }}
                 </div>
-                <div
-                  :key="`membership_${membershipIndex}_action`"
-                  class="grid-table-body"
-                  @click="toggleExposeCoupon(membershipIndex)"
-                >
-                  <div class="collapse-icon" :class="{ expose: membershipIndexExpanded === membershipIndex }">
+                <div :key="`membership_${membershipIndex}_action`" class="grid-table-body membership-action">
+                  <i class="ic-trash" @click="handleDeleteMembershipOption(membershipIndex)"></i>
+                  <div
+                    class="collapse-icon"
+                    :class="{ expose: membershipIndexExpanded === membershipIndex }"
+                    @click="toggleExposeCoupon(membershipIndex)"
+                  >
                     <i class="ic-arrow-next"></i>
                   </div>
                 </div>
@@ -102,7 +107,6 @@
                   :coupon="coupon"
                   :show-add-button="couponIndex === membership.coupons.length - 1"
                   :error="feedback?.memberships?.[membershipIndex]?.coupons?.[couponIndex]"
-                  :disabled="isEdit"
                   @add-coupon="handleAddCoupon(membershipIndex)"
                   @update-coupon="(e) => handleUpdateCoupon(e, membershipIndex, couponIndex)"
                 />
@@ -113,17 +117,16 @@
         <section class="editor mb-16">
           <h3 class="mb-16">전시 콘텐츠<b class="must">*</b></h3>
           <div class="editor-wrap" :class="{ 'is-error': feedback?.contentDetail }">
-            <EditorContentOutput v-if="isEdit" :contents="detailData.content_detail" />
-            <SummernoteEditor v-else v-model.trim="detailData.content_detail" />
+            <SummernoteEditor v-model.trim="detailData.content_detail" />
           </div>
         </section>
-        <section class="nav-link mb-36">
-          <label>Nav Link<b class="must">*</b></label>
-          <SInput
-            v-model="detailData.navigation_link"
-            w-size="xx-large"
-            :class="{ 'is-error': feedback?.navigationLink }"
-            :disabled="isEdit"
+        <section class="mb-16">
+          <h3 class="mb-16">Note</h3>
+          <SImageUploadRepresentative
+            :image-src="detailData.note_image.note_image_url"
+            type="PROJECT_DETAIL_IMAGE"
+            @image-uploaded="updateNoteImage"
+            @image-removed="removeNoteImage"
           />
         </section>
       </div>
@@ -178,20 +181,21 @@
 import cloneDeep from 'lodash/cloneDeep';
 import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
+import SDatepicker from '../../commons/SDatepicker.vue';
+import EventTypeSelection from './EventTypeSelection.vue';
 import STitle from '~/components/admin/commons/STitle';
 import SButton from '~/components/admin/commons/SButton';
 import SInput from '~/components/admin/commons/SInput';
 import SToggle from '~/components/admin/commons/SToggle';
 import SummernoteEditor from '~/components/admin/commons/Summernote';
 import SDialogModal from '~/components/admin/modal/SDialogModal';
-import { COUPON_DEFAULT, MEMBERSHIP_DEFAULT, POST_DETAIL } from '~/assets/js/types';
+import { COUPON_DEFAULT, EVENT_DEFAULT, MEMBERSHIP_DEFAULT, POST_DETAIL } from '~/assets/js/types';
 import SCheckbox from '~/components/admin/commons/SCheckbox.vue';
 import SImageUploadRepresentative from '~/components/admin/commons/SImageUploadRepresentative.vue';
 import { imageMixin } from '~/mixins/imageMixin';
 import AddMembershipOption from '~/components/admin/page/membership/AddMembershipOption.vue';
 import CouponEditor from '~/components/admin/page/membership/CouponEditor.vue';
 import { toKoreaCurrency } from '~/assets/js/converter';
-import EditorContentOutput from '~/components/common/EditorContentOutput.vue';
 import { API_ERROR } from '~/utils/message';
 
 export default {
@@ -207,7 +211,8 @@ export default {
     SImageUploadRepresentative,
     AddMembershipOption,
     CouponEditor,
-    EditorContentOutput
+    SDatepicker,
+    EventTypeSelection
   },
   mixins: [imageMixin],
   props: {
@@ -247,6 +252,15 @@ export default {
   created() {
     this.detailData = this.postDetail;
     this.isEdit = this.mode === 'edit';
+    if (this.isEdit) {
+      const events = Object.entries(this.detailData.additional_info)
+        .filter(([_, quantity]) => quantity !== null)
+        .map(([eventType, quantity]) => ({
+          eventType,
+          quantity
+        }));
+      this.detailData = { ...this.postDetail, events };
+    }
   },
   methods: {
     reloadPage() {
@@ -262,41 +276,22 @@ export default {
     removeThumbnail() {
       this.detailData.thumbnail_urls = { ...POST_DETAIL.thumbnail_url };
     },
-    async updateDetailImage(e) {
-      try {
-        const response = await this.handleUploadImage(e, 'PROJECT_DETAIL_IMAGE');
-        this.detailData.detail_image = {
-          image_url: response.savedFileName,
-          original_file_name: response.originalFileName
-        };
-      } catch (error) {
-        this.modal.isFileError = true;
-      }
-      e.target.value = null;
-      e.target.files = null;
-    },
-    removeDetailImage() {
-      this.detailData.detail_image.image_url = '';
-      this.detailData.detail_image.original_file_name = '';
+
+    updateNoteImage(e) {
+      this.detailData.note_image.note_image_url = e.savedFileName;
+      this.detailData.note_image.original_file_name = e.originalFileName;
     },
 
-    downloadFile() {
-      const href = `${this.$store.state.BASE_URL}${this.detailData.detail_image?.image_url}`;
-      const link = document.createElement('a');
-
-      link.href = href;
-      link.setAttribute('target', '_blink');
-      link.setAttribute('download', this.detailData.detail_image.original_file_name);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(href);
+    removeNoteImage() {
+      this.detailData.note_image.note_image_url = '';
+      this.detailData.note_image.original_file_name = '';
     },
 
     handlePushMembershipOption(e) {
       const newMembership = cloneDeep(MEMBERSHIP_DEFAULT);
       newMembership.name = e.name;
       newMembership.price = e.price;
+      newMembership.image_url = e.image_url;
       if (Array.isArray(this.detailData?.memberships)) {
         this.detailData.memberships.push(newMembership);
       }
@@ -311,9 +306,23 @@ export default {
       }
       this.membershipIndexExpanded = membershipIndex;
     },
+
+    handleAddEvent() {
+      this.detailData.events.push(cloneDeep(EVENT_DEFAULT));
+    },
+
+    handleDeleteEvent(index) {
+      this.detailData.events.splice(index, 1);
+    },
+
+    handleUpdateEvent(newEventData, eventIndex) {
+      this.detailData.events[eventIndex] = cloneDeep(newEventData);
+    },
+
     handleAddCoupon(membershipIndex) {
       this.detailData.memberships[membershipIndex].coupons.push(cloneDeep(COUPON_DEFAULT));
     },
+
     handleUpdateCoupon(newCouponData, membershipIndex, couponIndex) {
       this.detailData.memberships[membershipIndex].coupons[couponIndex] = cloneDeep(newCouponData);
     },
@@ -379,15 +388,20 @@ export default {
       if (!thumbnail || !thumbnail.large || !thumbnail.medium || !thumbnail.small) {
         feedbackError.thumbnailUrl = true;
       }
-      const detailImage = this.detailData.detail_image;
-      if (!detailImage || !detailImage.image_url || !detailImage.original_file_name) {
-        feedbackError.detailImage = true;
+      const startDate = this.detailData.start_date;
+      if (!startDate || !this.$dayjs(startDate, 'YYYY-MM-DD', true).isValid()) {
+        feedbackError.start_date = true;
       }
+      const endDate = this.detailData.end_date;
+      if (!endDate || !this.$dayjs(endDate, 'YYYY-MM-DD', true).isValid()) {
+        feedbackError.end_date = true;
+      }
+      // const detailImage = this.detailData.note_image;
+      // if (!detailImage || !detailImage.note_image_url || !detailImage.original_file_name) {
+      //   feedbackError.detailImage = true;
+      // }
       if (!this.detailData.content_detail) {
         feedbackError.contentDetail = true;
-      }
-      if (!this.detailData.navigation_link) {
-        feedbackError.navigationLink = true;
       }
 
       const memberships = this.detailData?.memberships || [];
@@ -417,7 +431,6 @@ export default {
 
       return feedbackError;
     },
-
     checkEdit() {
       if (this.isEdit) {
         this.modal.isConfirmSave = true;
@@ -431,33 +444,55 @@ export default {
       }
     },
     handleSubmitForm() {
-      if (this.mode === 'create') {
-        this.handleRegistrationPost();
-      }
-      if (this.mode === 'edit') {
-        this.handleUpdateEnabledPost();
-      }
+      // if (this.mode === 'create') {
+      this.handleRegistrationPost();
+      // this.reloadPage();
+      // }
+      // if (this.mode === 'edit') {
+      //   this.handleUpdateEnabledPost();
+      // }
     },
     async handleRegistrationPost() {
+      const additionalInfo = this.detailData.events.reduce((acc, { eventType, quantity }) => {
+        acc[eventType] = (acc[eventType] || 0) + quantity;
+        return acc;
+      }, {});
+      this.detailData = { ...this.detailData, additional_info: additionalInfo, events: null };
       try {
-        await this.$axios.post('/admin/posts', this.detailData);
+        if (this.mode === 'create') {
+          await this.$axios.post('/admin/posts', this.detailData);
+        } else {
+          await this.$axios.put('/admin/posts', this.detailData);
+        }
         this.modal = Object.assign(this.modal, { isConfirmSave: false, isSave: true });
+        // this.reloadPage();
       } catch (error) {
         alert(API_ERROR);
       }
     },
-    async handleUpdateEnabledPost() {
-      try {
-        if (typeof this.detailData.id !== 'number') {
-          return;
+    // async handleUpdateEnabledPost() {
+    //   try {
+    //     if (typeof this.detailData.id !== 'number') {
+    //       return;
+    //     }
+    //     await this.$axios.put(`/admin/posts/${this.detailData.id}/update-is-enabled`, {
+    //       is_enabled: this.detailData.is_enabled
+    //     });
+    //     this.modal = Object.assign(this.modal, { isConfirmSave: false, isSave: true });
+    //   } catch (error) {
+    //     alert(API_ERROR);
+    //   }
+    // }
+    handleDeleteMembershipOption(index) {
+      if (typeof this.membershipIndexExpanded === 'number') {
+        if (this.membershipIndexExpanded === index) {
+          this.membershipIndexExpanded = null;
         }
-        await this.$axios.put(`/admin/posts/${this.detailData.id}/update-is-enabled`, {
-          is_enabled: this.detailData.is_enabled
-        });
-        this.modal = Object.assign(this.modal, { isConfirmSave: false, isSave: true });
-      } catch (error) {
-        alert(API_ERROR);
+        if (this.membershipIndexExpanded > index) {
+          this.membershipIndexExpanded = this.membershipIndexExpanded - 1;
+        }
       }
+      this.detailData.memberships.splice(index, 1);
     }
   }
 };
@@ -571,6 +606,15 @@ export default {
   .membership-price {
     font-weight: 700;
   }
+  .membership-action {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: center;
+    i {
+      cursor: pointer;
+    }
+  }
   .grid-table-body {
     padding: 32px 20px;
     & > .collapse-icon {
@@ -591,18 +635,6 @@ export default {
 .editor {
   .editor-wrap {
     background-color: var(--color-white);
-  }
-}
-
-.nav-link {
-  background-color: var(--color-white);
-  padding: 12px 20px;
-  display: flex;
-  gap: 12px;
-  flex-wrap: nowrap;
-  align-items: center;
-  input {
-    flex: 1;
   }
 }
 
