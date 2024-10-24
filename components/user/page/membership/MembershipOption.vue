@@ -66,6 +66,7 @@ export default {
     max-width: 100%;
     overflow: hidden;
     height: auto;
+    max-height: 200px;
     border-radius: 8px;
     border: 2px solid transparent;
     cursor: pointer;
