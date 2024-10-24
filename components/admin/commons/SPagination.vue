@@ -1,6 +1,8 @@
 <template>
   <div>
-    <slot name="data" :data="currentPageData" />
+    <div :class="tableWrapClass">
+      <slot name="data" :data="currentPageData" />
+    </div>
     <slot name="pagination">
       <div v-show="!isHidePagination" class="pagination" :class="paginationClass">
         <div class="pagination__wrap">
@@ -73,6 +75,10 @@ export default {
       type: Boolean,
       required: false,
       default: false
+    },
+    tableWrapClass: {
+      type: String,
+      default: 'admin-table-wrap'
     }
   },
   computed: {

@@ -25,9 +25,17 @@
       <div class="field-group">
         <label>사용기간<b class="must">*</b></label>
         <div v-if="isIssuance">
-          <SDatepicker v-model="couponEditor.startDate" :max="couponEditor.endDate" />
+          <SDatepicker
+            v-model="couponEditor.start_date"
+            :max="couponEditor.end_date"
+            :class="{ 'is-error': error?.start_date }"
+          />
           <span class="ml-8 mr-8">~</span>
-          <SDatepicker v-model="couponEditor.endDate" :min="couponEditor.startDate" />
+          <SDatepicker
+            v-model="couponEditor.end_date"
+            :min="couponEditor.start_date"
+            :class="{ 'is-error': error?.end_date }"
+          />
         </div>
         <div v-else class="field-value">
           <SInput
@@ -121,7 +129,7 @@ export default {
     },
     showAddButton: {
       type: Boolean,
-      required: true,
+      required: false,
       default: false
     },
     disabled: {

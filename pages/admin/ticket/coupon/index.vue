@@ -4,9 +4,14 @@
     <div class="mb-36">
       <h3 class="mb-16">쿠폰 설정</h3>
       <div class="setting-coupon">
-        <CouponEditor :show-add-button="false" :is-issuance="true" />
+        <CouponEditor
+          :coupon="couponData"
+          :is-issuance="true"
+          :error="feedback"
+          @update-coupon="(e) => handleUpdateCoupon(e)"
+        />
         <div class="box-button">
-          <SButton button-type="primary">검색</SButton>
+          <SButton button-type="primary" @click="handleAddCoupon()">검색</SButton>
           <SButton>초기화</SButton>
         </div>
       </div>
@@ -16,14 +21,16 @@
       <div class="search mb-24">
         <div class="mb-24">
           <SDropdown v-model="queryOptions.searchDateType" :option-list="dateOptionList" class="mr-16" />
-          <SDatepicker v-model="queryOptions.startDate" :max="queryOptions.endDate" />
+          <SDatepicker v-model="queryOptions.signUpDateFrom" :max="queryOptions.signUpDateTo" />
           <span class="ml-8 mr-8">~</span>
-          <SDatepicker v-model="queryOptions.endDate" :min="queryOptions.startDate" />
+          <SDatepicker v-model="queryOptions.signUpDateTo" :min="queryOptions.signUpDateFrom" />
         </div>
         <div class="mb-24">
           <label>상태</label>
-          <SCheckboxGroup v-model="queryOptions.state" :group-list="stateList">예정</SCheckboxGroup>
-          <!-- <b class="ml-28 mr-8">멤버십:</b><SCheckbox v-model="queryOptions.hasMembership" /> -->
+          <SCheckbox v-model="queryOptions.hasNumberOfEntries">입장횟수</SCheckbox>
+          <SCheckbox v-model="queryOptions.alreadyLoginedBefore">최근 로그인</SCheckbox>
+          <SCheckbox v-model="queryOptions.hasMembership">멤버십</SCheckbox>
+          <SCheckbox v-model="queryOptions.alreadyUsedCouponBefore">쿠폰 발급 여부</SCheckbox>
         </div>
         <div>
           <SSearchBar v-model="queryOptions.text" @search="onUserSearch()" />
@@ -35,7 +42,7 @@
     <div class="bottom-div">
       <div class="title-menu">
         <div class="left">
-          <SButton button-type="primary">+ 선택추가</SButton>
+          <SButton button-type="primary" @click="addUser"> + 선택추가</SButton>
         </div>
         <div class="right">
           <SButton class="mr-16">엑셀 일괄업로드</SButton>
@@ -56,7 +63,6 @@
                 <th>아이디</th>
                 <th>이름</th>
                 <th>연락처</th>
-                <th>가입일시</th>
                 <th>최근로그인</th>
                 <th>입장횟수</th>
                 <th>생성일시</th>
@@ -64,7 +70,7 @@
             </thead>
             <tbody>
               <tr v-if="!data || !data[0]">
-                <td colspan="100%"><div>리스트가 없습니다.</div></td>
+                <td colspan="9"><div>리스트가 없습니다.</div></td>
               </tr>
               <tr v-for="(item, index) in data" :key="item.id" @click="item.isChecked = !item.isChecked">
                 <td>
@@ -76,25 +82,22 @@
                   <div>{{ tableData.startCount - index }}</div>
                 </td>
                 <td>
-                  <div class="text-left">{{ item.membershipRegistrationInfo?.name }}</div>
+                  <div class="text-left">{{ item.membershipName }}</div>
                 </td>
                 <td>
                   <div>{{ item.id }}</div>
                 </td>
                 <td>
-                  <div>{{ item.name }}</div>
+                  <div class="text-left">{{ item.name }}</div>
                 </td>
                 <td>
-                  <div>{{ item.contact_number }}</div>
-                </td>
-                <td>
-                  <div>{{ item.signup_date }}</div>
+                  <div>{{ item.phone }}</div>
                 </td>
                 <td>
                   <div>{{ item.lastLoginDate }}</div>
                 </td>
                 <td>
-                  <div>{{ item.numberOfEntries }}</div>
+                  <div class="text-right">{{ item.numberOfEntries }}</div>
                 </td>
                 <td>
                   <div>{{ item.createdDate }}</div>
@@ -105,6 +108,86 @@
         </template>
       </SPageable>
     </div>
+    <div class="mb-36">
+      <div class="title-menu">
+        <div class="left">
+          <h3>선택 계정 리스트</h3>
+          <span class="ml-8">({{ selectedData.userList.length }}/{{ selectedData.maxCount }})</span>
+        </div>
+        <div class="right">
+          <SButton button-type="transport-b" class="mr-8" @click="removeSelectedUser(true)">전체 삭제</SButton>
+          <SButton button-type="transport-b" class="mr-16" @click="removeSelectedUser()">삭제</SButton>
+          <SDropdown v-model="selectedData.pageSize" :option-list="optionList" @change="onSelectSizeChange"
+            >리스트 수:</SDropdown
+          >
+        </div>
+      </div>
+      <SPagination
+        :table-wrap-class="'admin-table-wrap'"
+        :table-data="selectedUserList"
+        :table-option="{ currentPage: selectedData.tablePage, pageSize: selectedData.pageSize }"
+        @onPageChange="onPageChange"
+      >
+        <template #data="{ data }">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>
+                  <SCheckbox v-model="selectedData.isCheckedAll" @input="setSelectedCheckedAll" />
+                </th>
+                <th>NO</th>
+                <th>멤버십</th>
+                <th>아이디</th>
+                <th>이름</th>
+                <th>연락처</th>
+                <th>최근로그인</th>
+                <th>입장횟수</th>
+                <th>생성일시</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="!data || !data[0]">
+                <td colspan="9"><div>리스트가 없습니다.</div></td>
+              </tr>
+              <tr v-for="item in data" :key="item.id" @click="onSelectedCheck(item.id)">
+                <td>
+                  <div>
+                    <SCheckbox v-model="item.isChecked" />
+                  </div>
+                </td>
+                <td>
+                  <div>{{ item.index }}</div>
+                </td>
+                <td>
+                  <div class="text-left">{{ item.membershipName }}</div>
+                </td>
+                <td>
+                  <div>{{ item.id }}</div>
+                </td>
+                <td>
+                  <div class="text-left">{{ item.name }}</div>
+                </td>
+                <td>
+                  <div>{{ item.phone }}</div>
+                </td>
+                <td>
+                  <div>{{ item.lastLoginDate }}</div>
+                </td>
+                <td>
+                  <div class="text-right">{{ item.numberOfEntries }}</div>
+                </td>
+                <td>
+                  <div>{{ item.createdDate }}</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </template>
+      </SPagination>
+    </div>
+    <div class="bottom">
+      <SButton button-type="primary" :disabled="isConfirmPending" @click="handleOpenModalConfirm">발급</SButton>
+    </div>
     <SDialogModal :is-show="isShowErrorModal" @close="isShowErrorModal = false">
       <template #content>{{ errorMsg }}</template>
       <template #modal-btn2>
@@ -112,32 +195,42 @@
       </template>
     </SDialogModal>
     <SDialogModal :is-show="isShowDoneModal" @close="refreshPage">
-      <template #content>초대권이 발급되었습니다.</template>
+      <template #content>쿠폰이 발급되었습니다.</template>
       <template #modal-btn2>
         <SButton button-type="primary" @click="refreshPage">확인</SButton>
+      </template>
+    </SDialogModal>
+    <SDialogModal :is-show="isConfirmSave" @close="isConfirmSave = false">
+      <template #content>변경 사항을 저장하시겠습니까?</template>
+      <template #modal-btn1>
+        <SButton button-type="primary" @click="issuedTicket()">확인</SButton>
       </template>
     </SDialogModal>
   </div>
 </template>
 
 <script>
+import cloneDeep from 'lodash/cloneDeep';
+import isEmpty from 'lodash/isEmpty';
 import STitle from '~/components/admin/commons/STitle';
 import SPageable from '~/components/admin/commons/SPageable';
 import SButton from '~/components/admin/commons/SButton';
 import SSearchBar from '~/components/admin/commons/SSearchBar';
 import SDropdown from '~/components/admin/commons/SDropdown';
 import SDatepicker from '~/components/admin/commons/SDatepicker';
-import { SEARCH_USER_TYPE, GENDER_TYPE, COUPON_STATE_TYPE } from '~/assets/js/types';
 import SCheckbox from '~/components/admin/commons/SCheckbox';
 import { threeCommaNum } from '~/assets/js/commons';
+import SPagination from '~/components/admin/commons/SPagination';
 import SDialogModal from '~/components/admin/modal/SDialogModal';
 import CouponEditor from '~/components/admin/page/membership/CouponEditor.vue';
-import SCheckboxGroup from '~/components/admin/commons/SCheckboxGroup.vue';
+import { API_ERROR } from '~/utils/message';
+import { COUPON_DEFAULT } from '~/assets/js/types';
 
 export default {
-  name: 'InvitationPage',
+  name: 'CouponPage',
   components: {
     SDialogModal,
+    SPagination,
     SCheckbox,
     SDatepicker,
     SDropdown,
@@ -145,46 +238,26 @@ export default {
     SPageable,
     SButton,
     SSearchBar,
-    CouponEditor,
-    SCheckboxGroup
+    CouponEditor
   },
   layout: 'admin/default',
-  async asyncData({ $axios }) {
-    const exposeExList = await $axios.$get('/admin/exhibitions/expose/title');
-    const exposeProList = await $axios.$get('/admin/programs/expose/title');
-
-    return { exposeExList, exposeProList };
-  },
   data() {
     return {
-      dateOptionList: [{ value: 'SIGNUP_DATE', label: 'Signup Date' }],
-      selectedKind: null,
-      exposeKindList: [
-        {
-          label: '전시',
-          value: 'EXHIBITION'
-        },
-        {
-          label: '프로그램',
-          value: 'PROGRAM'
-        }
-      ],
-      selectedEx: null,
-      exposeExList: [],
-      exposeProList: [],
+      couponData: {},
+      couponUsingId: null,
+      feedback: {},
+      dateOptionList: [{ value: 'CREATED_DATE', label: '등록일시' }],
       queryOptions: {
         page: 0,
-        size: 20,
-        startDate: '',
-        endDate: '',
-        gender: null,
-        isLocalResident: null,
-        minVisit: 0,
-        maxVisit: 50,
-        minInvite: 0,
-        maxInvite: 50,
-        text: '',
+        size: 5,
         searchDateType: 'CREATED_DATE',
+        signUpDateFrom: '',
+        signUpDateTo: '',
+        hasNumberOfEntries: false,
+        alreadyLoginedBefore: false,
+        alreadyUsedCouponBefore: false,
+        hasMembership: false,
+        text: '',
         excludeIds: []
       },
       tableData: null,
@@ -202,80 +275,16 @@ export default {
         pageSize: 5,
         userList: []
       },
-      isSelectedUserCheckedAll: false,
-      selectedItemMaxCount: 500,
       searchSelectText: '',
-      viewMemberCount: 0,
       errorMsg: '',
       isShowErrorModal: false,
       isShowDoneModal: false,
-      isConfirmPending: false
+      isConfirmPending: false,
+      isConfirmSave: false
     };
   },
-  async fetch() {
-    const startDate = this.queryOptions.startDate
-      ? this.$dayjs(this.queryOptions.startDate).format('YYYY-MM-DD 00:00:00')
-      : '';
-    const endDate = this.queryOptions.endDate
-      ? this.$dayjs(this.queryOptions.endDate).format('YYYY-MM-DD 23:59:59')
-      : '';
 
-    this.tableData = await this.$axios
-      .$get('/admin/accounts/ticket/invite', {
-        params: {
-          ...this.queryOptions,
-          startDate,
-          endDate
-        }
-      })
-      .then((tableData) => ({
-        ...tableData,
-        startCount: tableData.totalElements - tableData.number * tableData.size,
-        content: tableData.content.map((item) => ({ ...item, isChecked: false }))
-      }));
-  },
   computed: {
-    stateList() {
-      return Object.entries(COUPON_STATE_TYPE).map(([key, value]) => ({
-        label: value,
-        value: key
-      }));
-    },
-    exposeExDropdownList() {
-      const list =
-        this.selectedKind === 'EXHIBITION'
-          ? this.exposeExList
-          : this.selectedKind === 'PROGRAM'
-          ? this.exposeProList
-          : [];
-      return list.map((item) => ({
-        label: item.title,
-        value: item.id
-      }));
-    },
-    userOptionList() {
-      return Object.entries(SEARCH_USER_TYPE).map(([key, value]) => ({
-        value: key,
-        label: value
-      }));
-    },
-    genderOptionList() {
-      const optionList = Object.entries(GENDER_TYPE).map(([key, value]) => ({
-        value: key,
-        label: value
-      }));
-
-      optionList.unshift({ value: null, label: '전체' });
-
-      return optionList;
-    },
-    localOptionList() {
-      return [
-        { value: null, label: '전체' },
-        { value: true, label: 'Y' },
-        { value: false, label: 'N' }
-      ];
-    },
     selectedUserList() {
       const searchText = this.searchSelectText;
       let userList = this.selectedData.userList;
@@ -309,7 +318,99 @@ export default {
       }
     }
   },
+  mounted() {
+    this.fetch();
+  },
+  created() {
+    this.couponData = cloneDeep(COUPON_DEFAULT);
+  },
   methods: {
+    validateCouponItem(couponItem) {
+      const feedback = {};
+      if (!couponItem?.name) {
+        feedback.name = true;
+      }
+      if (!couponItem?.start_date) {
+        feedback.start_date = true;
+      }
+      if (!couponItem?.end_date) {
+        feedback.end_date = true;
+      }
+      if (!couponItem?.coupon_type) {
+        feedback.couponType = true;
+      }
+      if (!couponItem?.discount_percent || isNaN(Number(couponItem?.discount_percent))) {
+        feedback.discountPercent = true;
+      } else if (Number(couponItem?.discount_percent) > 100) {
+        feedback.discountPercent = true;
+      }
+      if (!couponItem?.image_url) {
+        feedback.imageUrl = true;
+      }
+      if (!couponItem?.is_permanent) {
+        if (!couponItem?.number_of_uses || isNaN(Number(couponItem?.number_of_uses))) {
+          feedback.numberOfUses = true;
+        }
+      }
+      if (isEmpty(feedback)) {
+        return null;
+      }
+      return feedback;
+    },
+    handleUpdateCoupon(newCouponData) {
+      this.couponData = cloneDeep(newCouponData);
+    },
+    async handleAddCoupon() {
+      const feedback = this.validateCouponItem(this.couponData);
+
+      const startDate = this.couponData.start_date
+        ? this.$dayjs(this.couponData.start_date).format('YYYY-MM-DD 00:00:00')
+        : '';
+
+      const endDate = this.couponData.end_date
+        ? this.$dayjs(this.couponData.end_date).format('YYYY-MM-DD 23:59:59')
+        : '';
+
+      const payload = { ...this.couponData, start_date: startDate, end_date: endDate, period_in_days: null };
+
+      if (isEmpty(feedback)) {
+        try {
+          const response = await this.$axios.post('/admin/coupons/non-membership', payload);
+          this.couponUsingId = response?.data;
+          this.feedback = {};
+          this.couponData = cloneDeep(COUPON_DEFAULT);
+        } catch (error) {
+          alert(API_ERROR);
+        }
+      } else {
+        this.feedback = feedback;
+      }
+    },
+    async fetch() {
+      const signUpDateFrom = this.queryOptions.signUpDateFrom
+        ? this.$dayjs(this.queryOptions.signUpDateFrom).format('YYYY-MM-DD 00:00:00')
+        : '';
+      const signUpDateTo = this.queryOptions.signUpDateTo
+        ? this.$dayjs(this.queryOptions.signUpDateTo).format('YYYY-MM-DD 23:59:59')
+        : '';
+
+      try {
+        this.tableData = await this.$axios.$get('/admin/accounts/with-membership', {
+          params: {
+            ...this.queryOptions,
+            signUpDateFrom,
+            signUpDateTo
+          }
+        });
+        this.tableData = {
+          ...this.tableData,
+          startCount: this.tableData.totalElements - this.tableData.number * this.tableData.size,
+          content: this.tableData.content.map((item) => ({ ...item, isChecked: false }))
+        };
+      } catch (error) {
+        alert(API_ERROR);
+      }
+    },
     setCheckedAll(newValue) {
       this.tableData.content = this.tableData.content.map((info) => ({
         ...info,
@@ -326,69 +427,58 @@ export default {
       return threeCommaNum(num);
     },
     changePage(page) {
-      if (!this.$fetchState.pending) {
-        this.queryOptions.page = page;
-        this.$fetch();
-      }
+      this.queryOptions.page = page;
+      this.fetch();
     },
     onUserSearch(isReset) {
-      if (!this.$fetchState.pending) {
-        if (isReset) {
-          this.queryOptions = {
-            page: 0,
-            size: 5,
-            startDate: '',
-            endDate: '',
-            gender: null,
-            isLocalResident: null,
-            minVisit: 0,
-            maxVisit: 50,
-            minInvite: 0,
-            maxInvite: 50,
-            text: '',
-            searchDateType: 'CREATED_DATE',
-            excludeIds: []
-          };
-        }
-        this.queryOptions.page = 0;
-        this.$fetch();
+      if (isReset) {
+        this.queryOptions = {
+          page: 0,
+          size: 5,
+          signUpDateFrom: '',
+          signUpDateTo: '',
+          hasNumberOfEntries: false,
+          alreadyLoginedBefore: false,
+          alreadyUsedCouponBefore: false,
+          hasMembership: false,
+          text: '',
+          excludeIds: []
+        };
       }
+      this.queryOptions.page = 0;
+      this.fetch();
     },
     addUser() {
-      if (!this.$fetchState.pending) {
-        const targetUserList = this.tableData.content.filter((item) => item.isChecked);
+      const targetUserList = this.tableData.content.filter((item) => item.isChecked);
 
-        targetUserList.forEach((value) => {
-          this.queryOptions.excludeIds.push(value.id);
-          this.selectedData.userList.push({
-            ...value,
-            isChecked: false
-          });
+      targetUserList.forEach((value) => {
+        this.queryOptions.excludeIds.push(value.id);
+        this.selectedData.userList.push({
+          ...value,
+          isChecked: false
         });
-        this.selectedData.userList = this.selectedData.userList.map((item, index) => ({ ...item, index: index + 1 }));
-        this.$fetch();
-      }
+      });
+      this.selectedData.userList = this.selectedData.userList.map((item, index) => ({ ...item, index: index + 1 }));
+      this.fetch();
     },
     removeSelectedUser(isAll) {
-      if (!this.$fetchState.pending) {
-        const selectedUserList = [...this.selectedData.userList].filter((user) => user.isChecked);
+      const selectedUserList = [...this.selectedData.userList].filter((user) => user.isChecked);
 
-        if (isAll) {
-          this.queryOptions.excludeIds = [];
-          this.selectedData.userList = [];
-        } else {
-          selectedUserList.forEach((user) => {
-            const { id } = user;
-            const excludeTargetIndex = this.queryOptions.excludeIds.findIndex((item) => item.id === id);
-            const selectedTargetIndex = this.selectedData.userList.findIndex((item) => item.id === id);
+      if (isAll) {
+        this.queryOptions.excludeIds = [];
+        this.selectedData.userList = [];
+      } else {
+        selectedUserList.forEach((user) => {
+          const { id } = user;
+          const excludeTargetIndex = this.queryOptions.excludeIds.findIndex((item) => item.id === id);
+          const selectedTargetIndex = this.selectedData.userList.findIndex((item) => item.id === id);
 
-            this.queryOptions.excludeIds.splice(excludeTargetIndex, 1);
-            this.selectedData.userList.splice(selectedTargetIndex, 1);
-          });
-        }
-        this.selectedData.tablePage = 0;
-        this.$fetch();
+          this.queryOptions.excludeIds.splice(excludeTargetIndex, 1);
+          this.selectedData.userList.splice(selectedTargetIndex, 1);
+        });
       }
+      this.selectedData.tablePage = 0;
+      this.fetch();
     },
     onSelectedCheck(id) {
       const target = this.selectedData.userList.find((item) => item.id === id);
@@ -400,10 +490,8 @@ export default {
       this.selectedData.isCheckedAll = false;
     },
     onSizeChange() {
-      if (!this.$fetchState.pending) {
-        this.selectedData.tablePage = 0;
-        this.$fetch();
-      }
+      this.selectedData.tablePage = 0;
+      this.fetch();
     },
     onSelectSizeChange() {
       this.selectedData.tablePage = 0;
@@ -420,18 +508,10 @@ export default {
     isValidate() {
       let isValid = false;
       let msg = '';
-
-      if (this.selectedKind === null) {
-        msg = '구분을를 선택해 주세요.';
-      } else if (this.selectedEx === null) {
-        msg = '전시/프로그램을 선택해 주세요.';
-      } else if (this.queryOptions.excludeIds.length === 0) {
+      if (this.queryOptions.excludeIds.length === 0) {
         msg = '계정를 선택해 주세요.';
       } else if (this.queryOptions.excludeIds.length > 500) {
         msg = '초대권은 한번에 최대 500명에게 발급 가능합니다.';
-      } else if (this.viewMemberCount <= 0) {
-        // eslint-disable-next-line no-unused-vars
-        msg = '관람 인원을 입력해 주세요.';
       } else {
         isValid = true;
       }
@@ -443,19 +523,23 @@ export default {
 
       return isValid;
     },
+    handleOpenModalConfirm() {
+      this.isConfirmSave = true;
+    },
     async issuedTicket() {
       this.isConfirmPending = true;
       if (this.isValidate()) {
-        await this.$axios
-          .$post('/admin/tickets/invite', {
-            accountIds: this.queryOptions.excludeIds,
-            kind: this.selectedKind,
-            id: this.selectedEx,
-            number: this.viewMemberCount
-          })
-          .then(() => {
-            this.isShowDoneModal = true;
+        try {
+          await this.$axios.$post('/admin/coupons/assign', {
+            account_ids: this.queryOptions.excludeIds,
+            coupon_id: this.couponUsingId
           });
+
+          this.isConfirmSave = false;
+          this.isShowDoneModal = true;
+        } catch (error) {
+          alert(API_ERROR);
+        }
       }
       this.isConfirmPending = false;
     },
@@ -479,7 +563,6 @@ export default {
     column-gap: 8px;
   }
 }
-
 .search {
   width: 100%;
   padding: 2.8rem 3.2rem;
@@ -570,13 +653,13 @@ export default {
       width: 4%;
     }
     &:nth-of-type(2) {
-      width: 4%;
+      width: 6%;
     }
     &:nth-of-type(3) {
       width: 15%;
     }
     &:nth-of-type(4) {
-      width: 10%;
+      width: 6%;
     }
     &:nth-of-type(5) {
       width: 9%;
@@ -588,10 +671,7 @@ export default {
       width: 12%;
     }
     &:nth-of-type(8) {
-      width: 15%;
-    }
-    &:nth-of-type(9) {
-      width: 5%;
+      width: 10%;
     }
     &:last-of-type {
       width: 15%;
