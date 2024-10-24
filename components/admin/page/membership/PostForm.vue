@@ -83,14 +83,35 @@
                 <div :key="`membership_${membershipIndex}_checkbox`" class="grid-table-body">
                   <SCheckbox v-model="membership.checked" />
                 </div>
-                <div :key="`membership_${membershipIndex}_name`" class="grid-table-body membership-name">
+                <div
+                  v-if="isEdit"
+                  :key="`membership_${membershipIndex}_name_edit`"
+                  class="grid-table-body membership-name"
+                >
+                  <SInput v-model="membership.name" w-size="large" :class="{ 'is-error': !membership.name }" />
+                </div>
+                <div v-else :key="`membership_${membershipIndex}_name`" class="grid-table-body membership-name">
                   {{ membership.name }}
                 </div>
-                <div :key="`membership_${membershipIndex}_price`" class="grid-table-body membership-price">
+                <div
+                  v-if="isEdit"
+                  :key="`membership_${membershipIndex}_price_edit`"
+                  class="grid-table-body membership-price"
+                >
+                  <SInput
+                    v-model="membership.price"
+                    is-comma-num
+                    w-size="large"
+                    text-align="right"
+                    :class="{ 'is-error': !membership.price }"
+                  />
+                  원
+                </div>
+                <div v-else :key="`membership_${membershipIndex}_price`" class="grid-table-body membership-price">
                   {{ toKoreaCurrency(membership.price) }}
                 </div>
                 <div :key="`membership_${membershipIndex}_action`" class="grid-table-body membership-action">
-                  <i class="ic-trash" @click="handleDeleteMembershipOption(membershipIndex)"></i>
+                  <!-- <i class="ic-trash" @click="handleDeleteMembershipOption(membershipIndex)"></i> -->
                   <div
                     class="collapse-icon"
                     :class="{ expose: membershipIndexExpanded === membershipIndex }"
@@ -171,7 +192,7 @@
     <SDialogModal :is-show="modal.isSave" @close="modal.isSave = false">
       <template #content>콘텐츠가 저장되었습니다.</template>
       <template #modal-btn1>
-        <SButton button-type="primary" @click="$router.push(`/admin/common/membership`)">확인</SButton>
+        <SButton button-type="primary" @click="$router.go(0)">확인</SButton>
       </template>
     </SDialogModal>
   </div>
@@ -360,6 +381,13 @@ export default {
     validateMembershipItem(membershipItem) {
       let feedback = { coupons: [] };
       const coupons = membershipItem.coupons || [];
+
+      if (!membershipItem.name) {
+        feedback.name = true;
+      }
+      if (!membershipItem.price) {
+        feedback.price = true;
+      }
       // validate coupon in membership
       if (!coupons.length) {
         feedback = { emptyCoupons: true };
@@ -377,6 +405,7 @@ export default {
       if (onlyHasCouponsFeedback && emptyErrorCoupon) {
         return null;
       }
+      console.log(feedback);
       return feedback;
     },
     isValidate() {
@@ -432,10 +461,10 @@ export default {
       return feedbackError;
     },
     checkEdit() {
-      if (this.isEdit) {
-        this.modal.isConfirmSave = true;
-        return null;
-      }
+      // if (this.isEdit) {
+      //   this.modal.isConfirmSave = true;
+      //   return null;
+      // }
       const feedback = this.isValidate();
       if (isEmpty(feedback)) {
         this.modal.isConfirmSave = true;
@@ -616,7 +645,7 @@ export default {
     }
   }
   .grid-table-body {
-    padding: 32px 20px;
+    padding: 16px 20px;
     & > .collapse-icon {
       transform: rotate(90deg);
       display: flex;

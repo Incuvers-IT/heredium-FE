@@ -28,6 +28,31 @@ export default {
     async getPostDetail() {
       try {
         const { data } = await this.$axios.get(`/admin/posts/details`);
+        const transformData = data;
+        let memberships = transformData.memberships || [];
+        memberships = memberships.map((membership) => {
+          const membershipId = membership.membership_id;
+          if (membershipId) {
+            delete membership.membership_id;
+          }
+          const coupons = membership.coupons.map((coupon) => {
+            const couponsId = coupon.coupon_id;
+            if (couponsId) {
+              delete coupon.coupon_id;
+            }
+            return {
+              ...coupon,
+              id: couponsId
+            };
+          });
+
+          return {
+            ...membership,
+            id: membershipId,
+            coupons
+          };
+        });
+        transformData.memberships = memberships;
         this.initFormData = data;
         this.mode = 'edit';
       } catch (error) {
