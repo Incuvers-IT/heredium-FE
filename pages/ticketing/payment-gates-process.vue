@@ -20,15 +20,15 @@ export default {
 
     const apiUrl = this.getApiUrl(userType);
     // TODO: update payType
-    let payType = 'TOSSPAYMENTS';
+    let payType = 'NICEPAYMENTS';
     let errReason = '';
     let paymentData = null;
 
     if (this.$store.state.deviceInfo.isApp) {
       if (this.$store.state.deviceInfo.isIOS) {
-        payType = 'TOSSPAYMENTS_IOS';
+        payType = 'NICEPAYMENTS_IOS';
       } else if (this.$store.state.deviceInfo.isAndroid) {
-        payType = 'TOSSPAYMENTS_ANDROID';
+        payType = 'NICEPAYMENTS_ANDROID';
       }
     }
     const data = {

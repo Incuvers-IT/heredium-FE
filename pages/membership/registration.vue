@@ -443,10 +443,10 @@ form {
   }
 
   .membership-radio-list__desktop {
-    display: flex;
+    display: flex !important;
   }
   .membership-radio-list__mobile {
-    display: none;
+    display: none !important;
   }
 }
 </style>
