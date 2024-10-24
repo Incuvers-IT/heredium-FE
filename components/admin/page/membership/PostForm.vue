@@ -159,12 +159,6 @@
         </div>
       </div>
     </div>
-    <SDialogModal :is-show="modal.isFileError" @close="modal.isFileError = false">
-      <template #content>5MB이하의 JPG, GIF, PNG 파일을 업로드해주세요.</template>
-      <template #modal-btn1>
-        <SButton button-type="primary" @click="modal.isFileError = false">확인</SButton>
-      </template>
-    </SDialogModal>
     <SDialogModal :is-show="modal.isCancel" @close="modal.isCancel = false">
       <template #content>콘텐츠를 저장하지 않고<br />이전페이지로 이동 하시겠습니까?</template>
       <template #modal-btn1>
@@ -260,8 +254,7 @@ export default {
         isConfirmSave: false,
         isSave: false,
         isCancel: false,
-        isReset: false,
-        isFileError: false
+        isReset: false
       },
       feedback: {},
       isConfirmPending: false,

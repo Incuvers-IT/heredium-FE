@@ -15,7 +15,7 @@ export const imageMixin = {
         const isValid = fileValid.check(e.target.files[0], maxSize, extension) !== null;
 
         if (!isValid) {
-          return null;
+          throw new Error('Error file type');
         }
 
         const formData = new FormData();
@@ -26,7 +26,7 @@ export const imageMixin = {
           });
           return response;
         } catch (error) {
-          return null;
+          throw new Error(error);
         }
       }
     }

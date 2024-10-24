@@ -1,28 +1,31 @@
 <template>
-  <div class="representative-img">
-    <label class="upload-img" @click.stop>
-      <img v-if="imageSrc" :src="imageUri" alt="테스트" />
-      <span v-if="!imageSrc" class="file-info">
-        <i class="ic-plus mb-28"></i>
-        <span class="h4 mb-17">이미지를 등록해주세요.</span>
-        <span class="bt-1r">5MB 이하의 JPG, GIF, PNG 파일을 선택해주세요.</span>
-        <input
-          type="file"
-          accept=".jpg, .jpeg, .png, .gif"
-          class="is-blind"
-          :disabled="disabled"
-          @change="handleFileUpload($event)"
-        />
-      </span>
-    </label>
-    <SButton v-if="imageSrc && !disabled" button-type="primary" w-size="small" h-size="small" @click="removeImage">
-      삭제
-    </SButton>
-
+  <div>
+    <div class="representative-img" :style="{ zoom }">
+      <label class="upload-img" @click.stop>
+        <img v-if="imageSrc" :src="imageUri" alt="테스트" />
+        <span v-if="!imageSrc" class="file-info">
+          <i class="ic-plus mb-28"></i>
+          <span class="h4 mb-17">이미지를 등록해주세요.</span>
+          <span class="bt-1r">5MB 이하의 JPG, GIF, PNG 파일을 선택해주세요.</span>
+          <input
+            type="file"
+            accept=".jpg, .jpeg, .png, .gif"
+            class="is-blind"
+            :disabled="disabled"
+            @change="handleFileUpload($event)"
+          />
+        </span>
+      </label>
+      <div class="confirm-btn">
+        <SButton v-if="imageSrc && !disabled" button-type="primary" w-size="small" h-size="small" @click="removeImage">
+          삭제
+        </SButton>
+      </div>
+    </div>
     <SDialogModal :is-show="isFileError" @close="isFileError = false">
       <template #content>5MB이하의 JPG, GIF, PNG 파일을 업로드해주세요.</template>
       <template #modal-btn1>
-        <SButton v-show="!disabled" button-type="primary" @click="isFileError = false">확인</SButton>
+        <SButton button-type="primary" @click="isFileError = false">확인</SButton>
       </template>
     </SDialogModal>
   </div>
@@ -41,6 +44,11 @@ export default {
     imageSrc: {
       type: String,
       default: ''
+    },
+    zoom: {
+      type: Number,
+      required: false,
+      default: 1
     },
     disabled: {
       type: Boolean,
@@ -73,6 +81,8 @@ export default {
         const response = await this.handleUploadImage(e, this.type);
         if (response) {
           this.$emit('image-uploaded', response);
+        } else {
+          this.isFileError = true;
         }
       } catch (error) {
         this.isFileError = true;
@@ -134,8 +144,7 @@ export default {
       }
     }
   }
-
-  button {
+  .confirm-btn {
     position: absolute;
     right: 0.8rem;
     top: 0.8rem;
