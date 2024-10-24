@@ -7,7 +7,7 @@
     <section class="content-detail membership-section-content">
       <div v-html="postDetail.content_detail"></div>
     </section>
-    <UEventCardList class="membership-section-content membership-benefits" :event-list="eventList" />
+    <!-- <UEventCardList class="membership-section-content membership-benefits" :event-list="eventList" /> -->
     <div class="membership-section-content membership-form-container">
       <form>
         <div class="membership-form-content">
@@ -68,7 +68,7 @@
       />
       <UExistedMembershipDialog v-if="hasMembership" :on-confirm="goToMyMembership" />
     </div>
-    <section class="note membership-section-content">
+    <section v-if="postImageNote" class="note membership-section-content">
       <img :src="postImageNote" alt="Heredium membership note" />
     </section>
     <UBottomSheet :visible.sync="isShowBottomSheet">
@@ -105,7 +105,6 @@ import { concat } from 'lodash';
 import { toKoreaCurrency } from '~/assets/js/converter';
 import UBottomSheet from '~/components/user/common/UBottomSheet.vue';
 import UButton from '~/components/user/common/UButton.vue';
-import UEventCardList from '~/components/user/common/UEventCardList.vue';
 import UNoticePolicy from '~/components/user/common/UNoticePolicy.vue';
 import URefundPolicy from '~/components/user/common/URefundPolicy.vue';
 import UExistedMembershipDialog from '~/components/user/modal/dialog/UExistedMembershipDialog.vue';
@@ -124,7 +123,6 @@ export default {
     UNoticePolicy,
     UWarningDialog,
     UExistedMembershipDialog,
-    UEventCardList,
     UBottomSheet,
     MembershipRegistrationUnavailable
   },
@@ -328,10 +326,10 @@ form {
   margin-top: 12px;
 }
 
-.total-amount,
-.agreement-list,
-.btn-submit,
-.membership-radio-list__desktop {
+.membership-form-container .total-amount,
+.membership-form-container .agreement-list,
+.membership-form-container .btn-submit,
+.membership-form-container .membership-radio-list__desktop {
   display: none;
 }
 
@@ -386,10 +384,9 @@ form {
     grid-template-columns: auto 350px;
     grid-template-areas:
       'i2 i2'
-      'i1 i5'
+      'i1 i4'
       'i3 i3'
-      'i4 i4'
-      'i6 i6';
+      'i5 i5';
   }
   .contents > .banner {
     grid-area: i1;
@@ -400,14 +397,11 @@ form {
   .contents > .content-detail {
     grid-area: i3;
   }
-  .contents > .membership-benefits {
+  .contents > .membership-form-container {
     grid-area: i4;
   }
-  .contents > .membership-form-container {
-    grid-area: i5;
-  }
   .contents > .note {
-    grid-area: i6;
+    grid-area: i5;
   }
   .contents h1 {
     font-weight: 700;

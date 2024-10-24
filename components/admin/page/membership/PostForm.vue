@@ -25,7 +25,7 @@
             />
           </div>
         </div>
-        <div class="row">
+        <!-- <div class="row">
           <label>내용(선택) </label>
           <div>
             <div>
@@ -39,7 +39,7 @@
             </div>
             <SButton button-type="primary" w-size="medium" @click="handleAddEvent"> Add </SButton>
           </div>
-        </div>
+        </div> -->
         <div class="row">
           <label>게시물 등록 기간 / 오픈일</label>
           <div>
@@ -203,7 +203,6 @@ import cloneDeep from 'lodash/cloneDeep';
 import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
 import SDatepicker from '../../commons/SDatepicker.vue';
-import EventTypeSelection from './EventTypeSelection.vue';
 import STitle from '~/components/admin/commons/STitle';
 import SButton from '~/components/admin/commons/SButton';
 import SInput from '~/components/admin/commons/SInput';
@@ -232,8 +231,7 @@ export default {
     SImageUploadRepresentative,
     AddMembershipOption,
     CouponEditor,
-    SDatepicker,
-    EventTypeSelection
+    SDatepicker
   },
   mixins: [imageMixin],
   props: {
@@ -482,11 +480,7 @@ export default {
       // }
     },
     async handleRegistrationPost() {
-      const additionalInfo = this.detailData.events.reduce((acc, { eventType, quantity }) => {
-        acc[eventType] = (acc[eventType] || 0) + quantity;
-        return acc;
-      }, {});
-      this.detailData = { ...this.detailData, additional_info: additionalInfo, events: null };
+      this.detailData = { ...this.detailData, additional_info: {}, events: null };
       try {
         if (this.mode === 'create') {
           await this.$axios.post('/admin/posts', this.detailData);
@@ -495,8 +489,11 @@ export default {
         }
         this.modal = Object.assign(this.modal, { isConfirmSave: false, isSave: true });
         // this.reloadPage();
+        console.log('ok');
       } catch (error) {
+        console.log(API_ERROR);
         alert(API_ERROR);
+        this.modal.isConfirmSave = false;
       }
     },
     // async handleUpdateEnabledPost() {
