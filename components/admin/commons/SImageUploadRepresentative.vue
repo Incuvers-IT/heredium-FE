@@ -5,8 +5,8 @@
         <img v-if="imageSrc" :src="imageUri" alt="테스트" />
         <span v-if="!imageSrc" class="file-info">
           <i class="ic-plus mb-28"></i>
-          <span class="h4 mb-17">이미지를 등록해주세요.</span>
-          <span class="bt-1r">5MB 이하의 JPG, GIF, PNG 파일을 선택해주세요.</span>
+          <span class="h4 mb-17 text-center">이미지를 등록해주세요.</span>
+          <span class="bt-1r text-center">5MB 이하의 JPG, GIF, PNG 파일을 선택해주세요.</span>
           <input
             type="file"
             accept=".jpg, .jpeg, .png, .gif"
@@ -144,6 +144,11 @@ export default {
       }
     }
   }
+
+  .text-center {
+    text-align: center;
+  }
+
   .confirm-btn {
     position: absolute;
     right: 0.8rem;

@@ -4,7 +4,7 @@
       <div class="representative-img mr-28">
         <SImageUploadRepresentative
           v-model="membershipImage"
-          :zoom="0.4"
+          :zoom="0.9"
           type="PROJECT_DETAIL_IMAGE"
           :image-src="membershipImage"
           :class="{ 'is-error': isSubmitted && !membershipImage }"
@@ -108,7 +108,7 @@ export default {
 .representative-img {
   position: relative;
   flex: 1 1 56rem;
-  width: 350px;
+  width: 132px;
 }
 
 .create-membership {
