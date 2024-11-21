@@ -118,7 +118,7 @@
                   :key="`${membership.tempId}_active-register`"
                   class="grid-table-body checkbox-cell"
                 >
-                  <SCheckbox v-model="membership.is_register_membership_button_shown" />
+                  <SCheckbox v-model="membership.is_register_membership_button_shown"  />
                 </div>
                 <div
                   v-show="!membership.is_deleted"
@@ -183,6 +183,7 @@
       <div class="bottom">
         <SButton @click="modal.isCancel = true">취소</SButton>
         <div class="right">
+          <SButton class="mr-8" @click="modal.isShowHistory = true">역사</SButton>
           <SButton class="mr-8" @click="modal.isReset = true">초기화</SButton>
           <SButton button-type="primary" :disabled="isConfirmPending" @click="checkEdit">저장</SButton>
         </div>
@@ -218,6 +219,10 @@
         <SButton button-type="primary" @click="$router.go(0)">확인</SButton>
       </template>
     </SDialogModal>
+    <HistoryModal 
+      :is-show="modal.isShowHistory"
+      @close="modal.isShowHistory = false"
+    />
   </div>
 </template>
 
@@ -227,6 +232,7 @@ import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
 import SDatepicker from '../../commons/SDatepicker.vue';
 import SFlexInputGrid from '../../commons/SFlexInputGrid.vue';
+import HistoryModal from "./HistoryModal.vue";
 import STitle from '~/components/admin/commons/STitle';
 import SButton from '~/components/admin/commons/SButton';
 import SInput from '~/components/admin/commons/SInput';
@@ -256,7 +262,8 @@ export default {
     AddMembershipOption,
     CouponEditor,
     SDatepicker,
-    SFlexInputGrid
+    SFlexInputGrid,
+    HistoryModal
   },
   mixins: [imageMixin],
   props: {
@@ -285,7 +292,8 @@ export default {
         isConfirmSave: false,
         isSave: false,
         isCancel: false,
-        isReset: false
+        isReset: false,
+        isShowHistory: false
       },
       feedback: {},
       isConfirmPending: false,

@@ -1,6 +1,6 @@
 <template>
   <label>
-    <input :value="value" type="checkbox" :checked="isChecked" @click="onToggle" />
+    <input :value="value" type="checkbox" :checked="isChecked" :disabled="disabled" @click="onToggle" />
     <span class="toggle"></span>
     <span v-if="isHasSlotText" class="text"><slot name="default" /></span>
   </label>
@@ -11,6 +11,11 @@ export default {
   name: 'SToggle',
   props: {
     value: {
+      type: Boolean,
+      required: false,
+      default: false
+    },
+    disabled: {
       type: Boolean,
       required: false,
       default: false
