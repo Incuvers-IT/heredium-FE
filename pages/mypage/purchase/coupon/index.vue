@@ -469,6 +469,16 @@ export default {
   }
 }
 
+::v-deep(.coupon-card) {
+  display: grid !important;
+  grid-template-columns: 56px 1fr;
+  column-gap: 12px;
+  row-gap: 8px;
+  align-items: start;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 @media screen and (max-width: 768px) {
   ::v-deep(.coupon-list) {
     width: 100%;
