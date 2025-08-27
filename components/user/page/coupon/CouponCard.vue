@@ -469,4 +469,62 @@ export default {
     font-size: 1.3rem;
   }
 }
+
+/* 0) flex 아이템이 줄어들 수 있게 (가장 중요) */
+.coupon-card .coupon-detail,
+.coupon-card .right-action {
+  min-width: 0; /* 기본 min-content 해제 → 줄바꿈/축소 허용 */
+}
+
+/* 1) 텍스트 오버플로우 방지 */
+.coupon-card .name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.coupon-card .type-discount,
+.coupon-card .discount .date {
+  white-space: normal;
+  overflow-wrap: anywhere; /* 긴 토큰도 강제로 줄바꿈 */
+}
+
+/* 2) 선택 라디오 영역 고정폭(늘어나지 않게) */
+.select-box { flex: 0 0 24px; }
+.select-box .circle { width: 20px; height: 20px; }
+
+/* 3) 버튼이 폭을 벌리지 않게 padding 축소 (기존 padding: 2rem 제거) */
+.right-action .use-btn {
+  min-width: 80px !important; /* 필요시 80~92 조정 */
+  height: 32px;
+  padding: 0 12px;            /* ← 핵심: 가로 패딩 소형화 */
+  border: 1px solid black;
+}
+
+/* 4) 모바일 최적화(폰트/이미지/여백 다운) */
+@media (max-width: 480px) {
+  .coupon-card { column-gap: 12px; }
+  .coupon-card .img-wrap { width: 56px; height: 56px; padding: 8px; }
+
+  .coupon-card .coupon-detail .name {
+    font-size: clamp(1.4rem, 4vw, 1.6rem);
+  }
+  .coupon-card .coupon-detail .type-discount {
+    font-size: clamp(1.2rem, 3.6vw, 1.4rem);
+  }
+  .coupon-card .coupon-detail .discount .date {
+    font-size: clamp(1.1rem, 3.2vw, 1.3rem);
+  }
+
+  .right-action { padding-right: 0; }
+}
+
+/* (선택) 선택 모드에서는 버튼을 아래줄로 내려 공간 확보 */
+@media (max-width: 480px) {
+  .coupon-card.full-width .right-action {
+    width: 100%;
+    order: 3;                  /* 카드의 마지막 줄로 이동 */
+    justify-content: flex-start;
+    margin-top: 8px;
+  }
+}
 </style>
