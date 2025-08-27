@@ -21,6 +21,7 @@
           }"
         >
           <input
+            type="text"
             class="data-input"
             :style="{
               width: `${width}`
@@ -287,5 +288,34 @@ export default {
       font-size: 1.8rem;
     }
   }
+}
+
+/* iOS에서 값이 투명해 보이는 이슈 방지 */
+.data-input {
+  color: var(--color-black) !important;
+  -webkit-text-fill-color: var(--color-black) !important; /* 핵심 */
+  -webkit-appearance: none;
+  appearance: none;
+  background-clip: padding-box;
+}
+
+/* placeholder 색도 명시(스코프 영향 받도록 .data-input 기준) */
+.data-input::placeholder {
+  color: var(--color-u-grey-2);
+  -webkit-text-fill-color: var(--color-u-grey-2);
+}
+
+/* readonly일 때도 색 빠지지 않게 */
+.data-input[readonly],
+.data-input.is-readonly {
+  opacity: 1;
+  -webkit-text-fill-color: var(--color-black) !important;
+}
+
+/* iOS 자동완성 테마가 덮어쓰는 경우 방어 */
+.data-input:-webkit-autofill {
+  -webkit-text-fill-color: var(--color-black) !important;
+  box-shadow: 0 0 0 1000px var(--color-white) inset !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--color-white) inset !important;
 }
 </style>
