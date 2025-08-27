@@ -3,17 +3,19 @@
     <div class="center box">
       <div v-if="!data || data?.length === 0"><no-coupon /></div>
       <div v-else>
-        <coupon-card
-          v-for="item in data"
-          :key="`coupon-${item.id}-${item.unused_coupons?.length}`"
-          :detail-coupon="item"
-          :is-selection="isSelection"
-          :right-button="rightButton"
-          :value="item.id"
-          :model-value="selectedCouponId"
-          :change="updateSelection"
-          @refresh-coupon-list="handleRefreshCouponList"
-        />
+        <client-only>
+          <coupon-card
+            v-for="item in data"
+            :key="`coupon-${item.id}-${item.unused_coupons?.length}`"
+            :detail-coupon="item"
+            :is-selection="isSelection"
+            :right-button="rightButton"
+            :value="item.id"
+            :model-value="selectedCouponId"
+            :change="updateSelection"
+            @refresh-coupon-list="handleRefreshCouponList"
+          />
+        </client-only>
       </div>
     </div>
   </KeepAlive>
