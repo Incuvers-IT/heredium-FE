@@ -500,7 +500,7 @@ export default {
     box-sizing: border-box;
   }
   ::v-deep(.coupon-card) {
-    display: grid;
+    display: grid !important;
     grid-template-columns: 56px 1fr;
     column-gap: 12px;
     row-gap: 8px;
@@ -515,7 +515,7 @@ export default {
     width: 56px;
     height: 56px;
     padding: 0;
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: center;
   }
