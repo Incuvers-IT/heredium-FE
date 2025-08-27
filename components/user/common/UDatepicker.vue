@@ -22,6 +22,7 @@
         >
           <input
             class="data-input"
+            type="text"
             :style="{
               width: `${width}`
             }"
@@ -287,5 +288,10 @@ export default {
       font-size: 1.8rem;
     }
   }
+}
+
+input {
+  -webkit-text-fill-color: var(--color-black) !important;
+  /* ... */
 }
 </style>
