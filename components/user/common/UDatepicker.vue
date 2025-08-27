@@ -290,8 +290,26 @@ export default {
   }
 }
 
-input {
+/* iOS에서 값이 투명해 보이는 이슈 방지: 이 인풋만 강제 */
+.data-input {
+  color: var(--color-black) !important;
   -webkit-text-fill-color: var(--color-black) !important;
-  /* ... */
+  -webkit-appearance: none;
+  appearance: none;
+  background-clip: padding-box;
+  font-family: inherit;
+  letter-spacing: normal;
+}
+
+.data-input::placeholder {
+  color: var(--color-u-grey-2);
+  -webkit-text-fill-color: var(--color-u-grey-2);
+  opacity: 1;
+}
+
+.data-input[readonly],
+.data-input.is-readonly {
+  opacity: 1;
+  -webkit-text-fill-color: var(--color-black) !important;
 }
 </style>
