@@ -133,9 +133,10 @@
           </UCheckbox>
         </div>
         <div class="marketing-info">
-          <p>
-            고객(정보주체)의 개인정보보호 및 권리는
-            「개인정보 보호법」및 관계 법령에 따라 헤레디움(사이트)에서 안전하게 관리하고 있습니다.
+          <p class="mi-text">
+            고객(정보주체)의 개인정보보호 및 권리는 <br class="only-mobile" />
+            <span style="margin-left: -0.7rem;">「개인정보 보호법」및 관계 법령에 따라</span> <br class="only-mobile" />
+            헤레디움(사이트)에서 안전하게 관리하고 있습니다.
           </p>
         </div>
       </div>
@@ -707,4 +708,9 @@ p {
       font-weight: 700;
     }
   }
+
+@media (max-width: 768px) {
+  .only-mobile { display: inline; } /* 모바일에서만 줄바꿈 보이기 */
+  .marketing-info .mi-text { text-align: center; } /* 모바일 중앙 정렬 */
+}
 </style>
