@@ -103,12 +103,15 @@
   >
     <template #title>
       <div class="title-modal only-mobile">
-        <img
+        <!-- <img
           v-if="imageSrcByCode(dataMembership.code)"
           :src="imageSrcByCode(dataMembership.code)"
           style="width: 48px; height: 48px"
           alt="membership icon"
-        />
+        /> -->
+        <img v-if="dataMembership.code === 1" src="~assets/img/Brown.png" class="membership-icon" />
+        <img v-if="dataMembership.code === 2" src="~assets/img/Terracotta.png" class="membership-icon" />
+        <img v-if="dataMembership.code === 3" src="~assets/img/Green.png" class="membership-icon" />
         <span class="name-membership only-mobile">
           {{ dataMembership.name }} 님의 현재 등급은<br />
           <B>{{ dataMembership.short_name }}</B>
@@ -121,7 +124,8 @@
       <div class="benefit only-mobile" @click.stop>
         <div class="benefit-box only-mobile">
           <div class="benefit-row only-mobile">
-            <img :src="imageSrcByCode(1)" class="membership-icon2 only-mobile" />
+            <!-- <img :src="imageSrcByCode(1)" class="membership-icon2 only-mobile" /> -->
+            <img src="~assets/img/Brown.png" class="membership-icon2" />
             <div class="name_target only-mobile">
               <p class="membership-name only-mobile">
                 <B>{{ (benefitRows.find((item) => item.code === 1) || {}).short_name }}</B>
@@ -136,7 +140,8 @@
           </div>
 
           <div class="benefit-row only-mobile">
-            <img :src="imageSrcByCode(2)" class="membership-icon2 only-mobile" />
+            <!-- <img :src="imageSrcByCode(2)" class="membership-icon2 only-mobile" /> -->
+            <img src="~assets/img/Terracotta.png" class="membership-icon2" />
             <div class="name_target only-mobile">
               <p class="membership-name only-mobile">
                 <B>{{ (benefitRows.find((item) => item.code === 2) || {}).short_name }}</B>
@@ -154,7 +159,8 @@
           </div>
 
           <div class="benefit-row only-mobile">
-            <img :src="imageSrcByCode(3)" class="membership-icon2 only-mobile" />
+            <!-- <img :src="imageSrcByCode(3)" class="membership-icon2 only-mobile" /> -->
+            <img src="~assets/img/Green.png" class="membership-icon2" />
             <div class="name_target only-mobile">
               <p class="membership-name only-mobile">
                 <B>{{ (benefitRows.find((item) => item.code === 3) || {}).short_name }}</B>
@@ -315,8 +321,8 @@ export default {
     margin-bottom: 8px;
 
     .membership-icon {
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
       object-fit: contain;
     }
   }
@@ -383,15 +389,14 @@ export default {
     column-gap: 7rem;
   }
   .membership-icon2 {
-    width: 30px;
-    height: 30px;
-    margin-top: 15px;
+    width: 40px;
+    height: 40px;
     object-fit: contain;
   }
   .left {
     display: flex;
     column-gap: 0.8rem;
-
+    align-items: center;
     .membership-name {
       font-weight: bold;
       font-size: 16px;
