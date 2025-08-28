@@ -1677,7 +1677,7 @@ h2 {
     letter-spacing: 0.25px;
     text-align: left;
     margin-top: 0.7rem;
-    margin-left: 0.4rem;
+    margin-left: 0.5rem;
   }
 }
 
