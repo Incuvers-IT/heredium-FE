@@ -30,7 +30,9 @@
                 <div class="left">
                   <img :src="imageSrcByCode(1)" class="membership-icon2" />
                   <div class="name_target">
-                    <p class="membership-name only-pc">{{ (benefitRows.find((item) => item.code === 1) || {}).name }}</p>
+                    <p class="membership-name only-pc">
+                      {{ (benefitRows.find((item) => item.code === 1) || {}).name }}
+                    </p>
                     <p class="membership-target">만 19세 이상 회원</p>
                   </div>
                 </div>
@@ -47,7 +49,9 @@
                 <div class="left">
                   <img :src="imageSrcByCode(2)" class="membership-icon2" />
                   <div class="name_target">
-                    <p class="membership-name only-pc">{{ (benefitRows.find((item) => item.code === 2) || {}).name }}</p>
+                    <p class="membership-name only-pc">
+                      {{ (benefitRows.find((item) => item.code === 2) || {}).name }}
+                    </p>
                     <p class="membership-target">
                       마일리지 {{ benefitRows.find((item) => item.code === 2)?.usage_threshold }}점 달성
                       {{ benefitRows.find((item) => item.code === 1)?.name }} 회원
@@ -67,7 +71,9 @@
                 <div class="left">
                   <img :src="imageSrcByCode(3)" class="membership-icon2" />
                   <div class="name_target">
-                    <p class="membership-name only-pc">{{ (benefitRows.find((item) => item.code === 3) || {}).name }}</p>
+                    <p class="membership-name only-pc">
+                      {{ (benefitRows.find((item) => item.code === 3) || {}).name }}
+                    </p>
                     <p class="membership-target">만 19세 미만 회원</p>
                   </div>
                 </div>
@@ -290,20 +296,23 @@ export default {
 <style lang="scss" scoped>
 .modal-custom {
   ::v-deep .modal-inner {
-    width: 530px !important;
-    height: 410px !important;
+    width: 520px !important;
+    height: 370px !important;
     max-width: 80vw;
     max-height: 80vh;
-    border-radius: 24px;
+    border-radius: 12px;
     flex-direction: row;
     transform: translateX(-50%, 50%) !important;
   }
   .title-modal {
+    width: 100%;
     display: flex;
     align-items: center;
+    justify-content: center;
     font-size: 1.8rem;
     column-gap: 1rem;
     padding: 0 !important;
+    margin-bottom: 8px;
 
     .membership-icon {
       width: 36px;
@@ -327,14 +336,12 @@ export default {
   }
 
   .benefit {
-    margin-top: 2rem;
-
     &-box {
       display: flex;
       justify-content: space-between;
       column-gap: 1.2rem;
       background-color: #fafafa;
-      border-radius: 24px;
+      border-radius: 12px;
       padding: 1.2rem;
     }
 
@@ -354,22 +361,30 @@ export default {
     }
   }
 }
+.modal-custom.only-pc {
+  ::v-deep .modal .head {
+    display: none !important;
+  }
+  ::v-deep .modal .body {
+    padding: 3.2rem 3rem 3rem !important; /* top right/left bottom */
+  }
+}
 .benefit-box {
   display: flex;
   flex-direction: column;
   background-color: #fafafa !important;
-  border-radius: 24px;
+  border-radius: 12px;
   padding: 1.6rem;
   row-gap: 1.6rem;
 
   .benefit-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    column-gap: 7rem;
   }
   .membership-icon2 {
-    width: 24px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
     margin-top: 15px;
     object-fit: contain;
   }
@@ -481,7 +496,7 @@ export default {
     max-width: 360px !important;
     max-height: 80vh !important;
     height: auto !important;
-    border-radius: 24px;
+    border-radius: 12px;
     position: absolute;
     top: 50% !important;
     left: 50% !important;
@@ -515,7 +530,6 @@ export default {
       }
     }
   }
-
   /* 회색 영역이 꽉 차도록 */
   .benefit.only-mobile {
     flex: 1;
@@ -531,7 +545,7 @@ export default {
       display: flex;
       flex-direction: column;
       background-color: #fafafa;
-      border-radius: 24px;
+      border-radius: 12px;
       padding: 1.6rem;
       row-gap: 2.5rem;
     }
@@ -572,6 +586,12 @@ export default {
         margin-bottom: 0;
       }
     }
+  }
+}
+.modal-custom.only-mobile {
+  ::v-deep .modal .head .close-btn {
+    top: 37% !important;
+    right: 2.2rem !important;
   }
 }
 .modal-custom.only-mobile .benefit-row.only-mobile .name_target.only-mobile {
