@@ -439,7 +439,14 @@ export default {
     }
   }
 }
-
+:deep(.use-btn[disabled]) {
+  background: #e5e5e5 !important;
+  color: #a3a3a3 !important;
+  border: 1px solid #CCCCCC !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
 /* 오른쪽 액션 버튼 영역 */
 .right-action {
   display: flex;
@@ -451,7 +458,7 @@ export default {
 
 .right-action .use-btn {
   min-width: 92px !important;
-  height: 32px;
+  height: 42px !important;
   font-size: 1.4rem;
   font-weight: 500;
   padding: 2rem;

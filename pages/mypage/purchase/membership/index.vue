@@ -676,16 +676,14 @@ export default {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  border: 1px solid #cccccc;
   background-color: #ffffff;
-
+  
   button {
     flex: 1;
     min-width: unset;
     padding: 10px 12px;
     text-align: center;
     border: 1px solid #cccccc;
-    background-color: #ffffff;
     cursor: pointer;
   }
 }

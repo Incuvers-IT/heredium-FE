@@ -735,16 +735,14 @@ export default {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  border: 1px solid #cccccc;
   background-color: #ffffff;
-
+  
   button {
     flex: 1;
     min-width: unset;
     padding: 10px 12px;
     text-align: center;
     border: 1px solid #cccccc;
-    background-color: #ffffff;
     cursor: pointer;
   }
 }
@@ -762,7 +760,6 @@ export default {
     width: auto !important;
     .data-input {
       padding: 0 1.6rem;
-      border: 1px solid #ccc;
       background-color: #fff;
       font-size: 1.4rem;
       max-height: 100%;
