@@ -120,7 +120,7 @@
                   />
                 </div>
               </div>
-              <p v-if="!feedback.regionState.isValid" class="error-msg">{{ feedback.regionState.text }}</p>
+              <p v-if="!feedback.regionState.isValid || !feedback.regionDistrict.isValid" class="error-msg">{{ feedback.regionState.text }}</p>
               <!-- <p v-if="!feedback.region.isValid" class="error-msg">
                 {{ feedback.region.text }}
               </p> -->
@@ -349,29 +349,6 @@ export default {
         this.submitting = false;
       }
     },
-    // ✅ 추가정보 검증 (체크박스 켜진 경우만)
-    validateAdditionalInfo() {
-      // 초기화
-      this.feedback.job.isValid = true; this.feedback.job.text = '';
-      this.feedback.regionState.isValid = true; this.feedback.regionState.text = '';
-      this.feedback.regionDistrict.isValid = true; this.feedback.regionDistrict.text = '';
-
-      if (!this.form.additionalInfoAgreed) return true; // 비동의면 통과
-
-      let ok = true;
-      if (!this.form.job) {
-        this.feedback.job.isValid = false;
-        this.feedback.job.text = '직업을 선택해주세요.';
-        ok = false;
-      }
-      if (!this.form.region.state && !this.form.region.district) {
-        this.feedback.regionState.isValid = false;
-        this.feedback.regionDistrict.isValid = false;
-        this.feedback.regionState.text = '지역를 선택해주세요.';
-        ok = false;
-      }
-      return ok;
-    },
     isValidate({ checkEmailPassword = true } = {}) {
       // 필요한 키만 초기화
       const reset = (k) => { this.feedback[k].isValid = true; this.feedback[k].text = ''; };
@@ -414,9 +391,18 @@ export default {
           this.feedback.job.isValid = false;
           this.feedback.job.text = '직업을 선택해주세요.';
         }
-        if (!this.form.region.state && !this.form.region.district) {
+
+        if (!this.form.region.state) {
           this.feedback.regionState.isValid = false;
+          this.feedback.regionState.text = '시/도를 선택해주세요.';
+        }
+
+        if (!this.form.region.district) {
           this.feedback.regionDistrict.isValid = false;
+          this.feedback.regionState.text = '시/군/구를 선택해주세요.';
+        }
+
+        if (!this.form.region.state && !this.form.region.district) {
           this.feedback.regionState.text = '지역을 선택해주세요.';
         }
       }

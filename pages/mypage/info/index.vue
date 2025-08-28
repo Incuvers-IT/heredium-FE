@@ -152,7 +152,7 @@
                     :searchable="true"
                     :class="{ 'is-error': !feedback.regionState.isValid }"
                   />
-                  <p v-if="!feedback.regionState.isValid" class="error-msg">{{ feedback.regionState.text }}</p>
+                  <p v-if="!feedback.regionState.isValid || !feedback.regionDistrict.isValid" class="error-msg">{{ feedback.regionState.text }}</p>
                 </div>
               </div>
               <div class="input district-input">
@@ -313,12 +313,6 @@
         <template #content>휴대폰 인증이 완료되었습니다.</template>
         <template #modal-btn2>
           <UButton button-type="primary" @click="onPhoneSuccessProceed">추가 정보 입력하고 혜택 받기</UButton>
-        </template>
-      </UDialogModal>
-      <UDialogModal :is-show="modal.isError">
-        <template #content>필수 입력 항목을 모두 채워주세요.</template>
-        <template #modal-btn2>
-          <UButton w-size="100" class="feedback-btn" @click="modal.isError = false">확인</UButton>
         </template>
       </UDialogModal>
     </section>
@@ -899,9 +893,15 @@ export default {
         if (!this.form.job) {
           jobFb.isValid = false; jobFb.text = '직업을 선택해주세요.';
         }
-        if (!this.form.region.state && !this.form.region.district) {
+        if (!this.form.region.state) {
           stFb.isValid  = false;
+          stFb.text  = '시/도를 선택해주세요.';
+        }
+        if(!this.form.region.district) {
           guFb.isValid  = false;
+          stFb.text  = '시/군/구를 선택해주세요.';
+        }
+        if (!this.form.region.state && !this.form.region.district) {
           stFb.text  = '지역을 선택해주세요.';
         }
       }
@@ -996,8 +996,6 @@ export default {
 
         // 아니라면 바로 저장
         await this.doSave(payload);
-      }else{
-        this.modal.isError = true;
       }
     },
     // 실제 PUT 호출
