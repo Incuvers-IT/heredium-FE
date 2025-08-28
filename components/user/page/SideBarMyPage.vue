@@ -1,6 +1,7 @@
 <template>
   <div>
-    <h1>Mypage</h1>
+    <h1 class="header only-pc">Mypage</h1>
+    <h1 class="header only-mobile">Mypage</h1>
     <section class="tab-sec">
       <div class="only-mobile">
         <div class="tabs page">
@@ -9,7 +10,7 @@
           </nuxt-link>
           <NuxtLink class="tab" to="/mypage/info">내 정보 수정</NuxtLink>
         </div>
-        <div class="tabs grid col-xs-3 mobile-sub-tab">
+        <div v-if="isPurchaseRoute" class="tabs grid col-xs-3 mobile-sub-tab">
           <NuxtLink to="/mypage/purchase/all" class="tab">전시·프로그램</NuxtLink>
           <NuxtLink to="/mypage/purchase/coupon" class="tab">쿠폰함</NuxtLink>
           <NuxtLink to="/mypage/purchase/membership" class="tab">멤버십</NuxtLink>
@@ -39,6 +40,9 @@ export default {
         (pathElementList.includes('purchase') && pathElementList.includes('coffee')) ||
         (pathElementList.includes('purchase') && pathElementList.includes('membership'))
       );
+    },
+    isPurchaseRoute() {
+      return this.$route.path.startsWith('/mypage/purchase');
     }
   }
 };
@@ -102,7 +106,7 @@ h1 {
   }
 }
 
-@media screen and (min-width: 769px) {
+@media screen and (min-width: 768px) {
   h1 {
     margin: 0 0 4.7rem;
     font-size: 4.2rem;
@@ -132,7 +136,7 @@ h1 {
         font-weight: 700;
         border-bottom: 2px solid black;
         padding-bottom: 0.4rem; /* 밑줄과 텍스트 간 적당한 여백 */
-        margin-bottom: 1.8rem;  /* 기존 마진에서 밑줄 두께(2px)+여백(4px)만큼 줄여줍니다 */
+        margin-bottom: 1.8rem; /* 기존 마진에서 밑줄 두께(2px)+여백(4px)만큼 줄여줍니다 */
       }
 
       &.big-tab {
@@ -142,6 +146,13 @@ h1 {
         letter-spacing: 0.25px;
       }
     }
+  }
+}
+@media screen and (max-width: 768px) {
+  h1.header.only-mobile {
+    font-size: 2.8rem; // 원하는 크기로 조정 (예: 2.4rem~3.2rem)
+    line-height: 140%;
+    margin: 2rem 0 3rem; // 필요하면 여백도 함께 줄이기
   }
 }
 </style>
