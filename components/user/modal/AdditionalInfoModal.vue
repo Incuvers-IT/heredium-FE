@@ -58,7 +58,7 @@
                     :class="{ 'is-error': !feedback.regionDistrict.isValid }"
                   />
                 </div>
-                <p v-if="!feedback.regionState.isValid" class="error-msg">{{ feedback.regionState.text }}</p>
+                <p v-if="!feedback.regionState.isValid || !feedback.regionDistrict.isValid" class="error-msg">{{ feedback.regionState.text }}</p>
               </div>
             </div>
           </div>
@@ -210,9 +210,20 @@ export default {
         this.feedback.job.text = '직업을 선택해주세요.';
         ok = false;
       }
-      if (!this.form.region.state && !this.form.region.district) {
+
+      if (!this.form.region.state) {
         this.feedback.regionState.isValid = false;
+        this.feedback.regionState.text = '시/도를 선택해주세요.';
+        ok = false;
+      }
+
+      if (!this.form.region.district) {
         this.feedback.regionDistrict.isValid = false;
+        this.feedback.regionState.text = '시/군/구를 선택해주세요.';
+        ok = false;
+      }
+
+      if (!this.form.region.state && !this.form.region.district) {
         this.feedback.regionState.text = '지역을 선택해주세요.';
         ok = false;
       }
