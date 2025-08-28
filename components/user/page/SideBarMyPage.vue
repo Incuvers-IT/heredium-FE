@@ -74,7 +74,7 @@ h1 {
       &.nuxt-link-active {
         color: var(--color-u-primary);
         font-weight: 700;
-        border-bottom: 2px solid var(--color-u-primary);
+        border-bottom: 2px solid var(--color-u-primary); 
       }
     }
   }
