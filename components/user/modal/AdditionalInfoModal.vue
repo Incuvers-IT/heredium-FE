@@ -32,7 +32,9 @@
                   default-text="선택"
                   w-size="full"
                   :searchable="true"
+                  :class="{ 'is-error': !feedback.job.isValid }"
                 />
+                <p v-if="!feedback.job.isValid" class="error-msg">{{ feedback.job.text }}</p>
               </div>
 
               <!-- 지역 입력 -->
@@ -45,6 +47,7 @@
                     default-text="시/도 선택"
                     w-size="full"
                     :searchable="true"
+                    :class="{ 'is-error': !feedback.regionState.isValid }"
                   />
                   <USelect
                     v-model="form.region.district"
@@ -52,8 +55,10 @@
                     default-text="시/군/구 선택"
                     w-size="full"
                     :searchable="true"
+                    :class="{ 'is-error': !feedback.regionDistrict.isValid }"
                   />
                 </div>
+                <p v-if="!feedback.regionState.isValid" class="error-msg">{{ feedback.regionState.text }}</p>
               </div>
             </div>
           </div>
@@ -115,6 +120,11 @@ export default {
       jobOptions: JOB_OPTIONS,
       isSaving: false,
       hydrating: false,
+      feedback: {
+        job: { isValid: true, text: '' },
+        regionState: { isValid: true, text: '' },
+        regionDistrict: { isValid: true, text: '' },
+      },
     };
   },
   computed: {
@@ -184,10 +194,45 @@ export default {
       this.form.region.district = dists.includes(districtCandidate)
         ? districtCandidate
         : (dists[0] || null);
-      this.$nextTick(() => { this._hydrating = false; });
+      this.$nextTick(() => { this.hydrating = false; });
+    },
+     validateAdditionalInfo() {
+      // 초기화
+      this.feedback.job.isValid = true; this.feedback.job.text = '';
+      this.feedback.regionState.isValid = true; this.feedback.regionState.text = '';
+      this.feedback.regionDistrict.isValid = true; this.feedback.regionDistrict.text = '';
+
+      if (!this.form.additionalInfoAgreed) return true;
+
+      let ok = true;
+      if (!this.form.job) {
+        this.feedback.job.isValid = false;
+        this.feedback.job.text = '직업을 선택해주세요.';
+        ok = false;
+      }
+      if (!this.form.region.state && !this.form.region.district) {
+        this.feedback.regionState.isValid = false;
+        this.feedback.regionDistrict.isValid = false;
+        this.feedback.regionState.text = '지역을 선택해주세요.';
+        ok = false;
+      }
+
+      // 첫 에러로 스크롤/포커스 (선택)
+      if (!ok) {
+        this.$nextTick(() => {
+          const el =
+            this.$el.querySelector('.dropdown.is-error .dropdown-btn') ||
+            this.$el.querySelector('.error-msg');
+          if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        });
+      }
+      return ok;
     },
     async submitForm() {
       if (this.isSaving) return;
+
+      if (!this.validateAdditionalInfo()) return;
+
       this.isSaving = true;
 
       try {
@@ -226,6 +271,7 @@ export default {
           isMarketingReceive: false,
           isLocalResident: false,
           additionalInfoAgreed: false,
+          issueMembershipCoupons: true,
         });
 
          // ✅ 스토어 반영 + 부모에 통지(스냅샷)
@@ -398,5 +444,31 @@ export default {
 
 ::v-deep .dropdown-menu {
   z-index: 100 !important;
+}
+
+.terms-area{
+  .error-msg {
+    color: var(--color-u-error);
+    font-size: 1.4rem;
+    font-weight: 500;
+    line-height: 160%;
+    letter-spacing: 0.25px;
+    text-align: left;
+    margin-top: 0.7rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .terms-area{
+    .error-msg {
+      color: var(--color-u-error);
+      font-size: 1.2rem;
+      font-weight: 500;
+      line-height: 160%;
+      letter-spacing: 0.25px;
+      text-align: left;
+      margin-top: 0.5rem;
+    }
+  }
 }
 </style>

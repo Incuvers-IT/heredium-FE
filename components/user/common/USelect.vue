@@ -2,19 +2,19 @@
   <div
     ref="root"
     class="dropdown"
-    :class="[{ 'is-open': isOpen }, wSize]"
+    :class="[{ 'is-open': isOpen, 'is-error': isError }, wSize]"
     :style="{ width }"
   >
     <!-- slot 으로 라벨을 넣고 싶을 때 -->
     <div v-if="isHasSlotText" class="txt-body1">
-      <slot/>
+      <slot></slot>
     </div>
 
     <div class="dropdown-wrap" :style="{ width }">
       <!-- 선택된 값 표시 버튼 -->
       <div
         class="dropdown-btn"
-        :class="{ disabled }"
+        :class="{ disabled, 'is-error': isError }"
         :style="{ width }"
         @click.stop="toggle"
       >
@@ -93,7 +93,9 @@ export default {
     searchable: {
       type: Boolean,
       default: false
-    }
+    },
+    error: { type: Boolean, default: false },        // 에러 여부 (간단)
+    errorMsg: { type: String, default: '' }          // 에러 메시지 (텍스트)
   },
   data() {
     return {
@@ -104,6 +106,7 @@ export default {
     };
   },
   computed: {
+    isError() { return !!(this.error || this.errorMsg); },
     // 검색어가 있을 때 옵션 필터
     filteredOptions() {
       if (!this.searchable || !this.searchTerm) {
@@ -297,5 +300,40 @@ i.only-mobile {
 /* 만약 li 높이가 너무 크면 이렇게 최소 높이만 잡아줄 수도 있습니다 */
 .dropdown-item.search-input {
   min-height: auto;
+}
+
+.dropdown.is-error {
+  .dropdown-btn {
+    border-color: rgba(var(--color-u-error-rgb, 255,77,79), 0.6) !important;
+    box-shadow: 0 0 0 1px rgba(var(--color-u-error-rgb, 255,77,79), 0.3) inset;
+
+    &:focus-within {
+      box-shadow:
+        0 0 0 1px rgba(var(--color-u-error-rgb, 255,77,79), 0.4) inset,
+        0 0 0 2px rgba(255, 77, 79, 0.15); // 바깥 glow 연하게
+    }
+  }
+
+  /* 열렸을 때 목록 외곽선도 에러색으로 맞추고 싶다면 */
+  .dropdown-menu {
+    border-color: var(--color-u-error) !important;
+  }
+
+  .error-msg {
+    color: var(--color-u-error);
+    font-size: 1.4rem;
+    font-weight: 500;
+    line-height: 160%;
+    letter-spacing: 0.25px;
+    text-align: left;
+  }
+}
+
+/* 모바일 폰트 축소 대응 (선택) */
+@media screen and (max-width: 768px) {
+  .dropdown.is-error .error-msg {
+    font-size: 0.5rem;
+    margin-top: 0.4rem;
+  }
 }
 </style>

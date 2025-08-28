@@ -135,8 +135,10 @@
                     default-text="선택"
                     w-size="full"
                     :searchable="true"
+                    :class="{ 'is-error': !feedback.job.isValid }"
                   />
                 </div>
+                <p v-if="!feedback.job.isValid" class="error-msg">{{ feedback.job.text }}</p>
               </div>
 
               <div class="input city-input">
@@ -148,7 +150,9 @@
                     w-size="full"
                     default-text="시/도 선택"
                     :searchable="true"
+                    :class="{ 'is-error': !feedback.regionState.isValid }"
                   />
+                  <p v-if="!feedback.regionState.isValid" class="error-msg">{{ feedback.regionState.text }}</p>
                 </div>
               </div>
               <div class="input district-input">
@@ -158,6 +162,7 @@
                   w-size="full"
                   default-text="시/군/구 선택"
                   :searchable="true"
+                  :class="{ 'is-error': !feedback.regionDistrict.isValid }"
                 />
               </div>
             </div>
@@ -310,6 +315,12 @@
           <UButton button-type="primary" @click="onPhoneSuccessProceed">추가 정보 입력하고 혜택 받기</UButton>
         </template>
       </UDialogModal>
+      <UDialogModal :is-show="modal.isError">
+        <template #content>필수 입력 항목을 모두 채워주세요.</template>
+        <template #modal-btn2>
+          <UButton w-size="100" class="feedback-btn" @click="modal.isError = false">확인</UButton>
+        </template>
+      </UDialogModal>
     </section>
   </main>
 </template>
@@ -370,7 +381,10 @@ export default {
         newPassword2: {
           isValid: true,
           text: ''
-        }
+        },
+        job: { isValid: true, text: '' },
+        regionState: { isValid: true, text: '' },
+        regionDistrict: { isValid: true, text: '' },
       },
       form: {
         job: null,
@@ -415,8 +429,6 @@ export default {
           encodeData: this.$route.params.EncodeData
         }
       });
-
-      console.log('userInfo', userInfo)
 
       if (userInfo) {
         this.modify = true;
@@ -843,6 +855,9 @@ export default {
       const emailFeedback = this.feedback.email;
       const newPasswordFeedback1 = this.feedback.newPassword1;
       const newPasswordFeedback2 = this.feedback.newPassword2;
+      const jobFb   = this.feedback.job;
+      const stFb    = this.feedback.regionState;
+      const guFb    = this.feedback.regionDistrict;
 
       clearValid();
 
@@ -877,6 +892,18 @@ export default {
       } else {
         newPasswordFeedback2.isValid = true;
         newPasswordFeedback2.text = '';
+      }
+
+      // 3) 추가정보 동의 시에만 필수 검사 (직업/시도/시군구)
+      if (this.form.additionalInfoAgreed) {
+        if (!this.form.job) {
+          jobFb.isValid = false; jobFb.text = '직업을 선택해주세요.';
+        }
+        if (!this.form.region.state && !this.form.region.district) {
+          stFb.isValid  = false;
+          guFb.isValid  = false;
+          stFb.text  = '지역을 선택해주세요.';
+        }
       }
 
       return isClearForm();
@@ -969,6 +996,8 @@ export default {
 
         // 아니라면 바로 저장
         await this.doSave(payload);
+      }else{
+        this.modal.isError = true;
       }
     },
     // 실제 PUT 호출
@@ -1436,8 +1465,7 @@ h2 {
     }
     p {
       margin-top: 0.8rem;
-      font-size: 1.3rem;
-      margin-left: 3rem;
+      font-size: 1.4rem;
     }
     border: 1px solid var(--color-grey-1);
   }
@@ -1638,5 +1666,32 @@ h2 {
   margin-top: 0.8rem;
   font-weight: 550;
   font-size: 1.6rem; /* 강조 부분만 조금 크게 */
+}
+
+
+.terms-area{
+  .error-msg {
+    color: var(--color-u-error);
+    font-size: 1.4rem;
+    font-weight: 500;
+    line-height: 160%;
+    letter-spacing: 0.25px;
+    text-align: left;
+    margin-top: 0.7rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .terms-area{
+    .error-msg {
+      color: var(--color-u-error);
+      font-size: 1.2rem;
+      font-weight: 500;
+      line-height: 160%;
+      letter-spacing: 0.25px;
+      text-align: left;
+      margin-top: 0.5rem;
+    }
+  }
 }
 </style>

@@ -88,8 +88,10 @@
                   default-text="선택"
                   w-size="full"
                   :searchable="true"
+                  :class="{ 'is-error': !feedback.job.isValid }"
                 />
               </div>
+              <p v-if="!feedback.job.isValid" class="error-msg">{{ feedback.job.text }}</p>
             </div>
 
             <div class="input region-input">
@@ -103,6 +105,7 @@
                     w-size="full"
                     default-text="시/도 선택"
                     :searchable="true"
+                    :class="{ 'is-error': !feedback.regionState.isValid }"
                   />
                 </div>
                 <div class="region-col">
@@ -113,9 +116,11 @@
                     w-size="full"
                     default-text="시/군/구 선택"
                     :searchable="true"
+                    :class="{ 'is-error': !feedback.regionDistrict.isValid }"
                   />
                 </div>
               </div>
+              <p v-if="!feedback.regionState.isValid" class="error-msg">{{ feedback.regionState.text }}</p>
               <!-- <p v-if="!feedback.region.isValid" class="error-msg">
                 {{ feedback.region.text }}
               </p> -->
@@ -148,6 +153,12 @@
       @close="modal.isTerms = false"
       @agree="termAgree"
     />
+    <UDialogModal :is-show="modal.isError">
+      <template #content>필수 입력 항목을 모두 채워주세요.</template>
+      <template #modal-btn2>
+        <UButton w-size="100" class="feedback-btn" @click="modal.isError = false">확인</UButton>
+      </template>
+    </UDialogModal>
   </main>
 </template>
 
@@ -158,10 +169,11 @@ import USelect from '~/components/user/common/USelect.vue';
 import UCheckbox from '~/components/user/common/UCheckbox';
 import { REGION_DATA, JOB_OPTIONS } from '~/assets/js/types';
 import URegisterModal from '~/components/user/modal/URegisterModal';
+import UDialogModal from '~/components/user/modal/UDialogModal';
 
 export default {
   name: 'Register3Page',
-  components: { UInput, UButton, USelect, UCheckbox, URegisterModal },
+  components: { UInput, UButton, USelect, UCheckbox, URegisterModal, UDialogModal },
   beforeRouteLeave(to, from, next) {
     // 페이지를 떠날 때 지우고 싶은 키들
     localStorage.removeItem('snsInfo');
@@ -215,7 +227,9 @@ export default {
           isValid: true,
           text: ''
         },
-        // region: { isValid: true, text: '' }
+        job: { isValid: true, text: '' },
+        regionState: { isValid: true, text: '' },
+        regionDistrict: { isValid: true, text: '' },
       },
       form: {
         region: { state: null, district: null },
@@ -297,17 +311,20 @@ export default {
       payload.isLocalResident   = this.form.region.state === '대전광역시';
       payload.encodeData        = this.encodeData;
 
+      // 이메일 플로우일 때만 이메일/비번 검사, 추가정보는 공통
+      const checkEmailPassword = !this.isSocialFlow;
+      if (!this.isValidate({ checkEmailPassword })) {
+        this.modal.isError = true;
+        this.submitting = false;
+        return;
+      }
+
       // 소셜 플로우면 validation 스킵
       if (this.isSocialFlow) {
         const { provider, snsToken } = this.snsInfo;
         payload.snsType = provider;
         payload.snsId   = snsToken;
       } else {
-        // 이메일 가입은 validation 체크
-        if (!this.isValidate()) {
-          this.submitting = false;
-          return;
-        }
         // 이메일·비밀번호 필드 추가
         payload.email           = this.email;
         payload.password        = this.password;
@@ -332,64 +349,80 @@ export default {
         this.submitting = false;
       }
     },
-    isValidate() {
-      const clearValid = () => {
-        Object.values(this.feedback).forEach((value) => {
-          value.isValid = true;
-          value.text = '';
-        });
-      };
-      const emailPattern =
-        /^([\w._-])*[a-zA-Z0-9]+([\w._-])*([a-zA-Z0-9])+([\w._-])+@([\w_-])*([a-zA-Z0-9]+\.)+[a-zA-Z0-9]{2,8}$/;
-      const isClearForm = () => !Object.values(this.feedback).find((value) => value.isValid === false);
-      const emailFeedback = this.feedback.email;
-      const passwordFeedback1 = this.feedback.password;
-      const passwordFeedback2 = this.feedback.passwordConfirm;
-      clearValid();
+    // ✅ 추가정보 검증 (체크박스 켜진 경우만)
+    validateAdditionalInfo() {
+      // 초기화
+      this.feedback.job.isValid = true; this.feedback.job.text = '';
+      this.feedback.regionState.isValid = true; this.feedback.regionState.text = '';
+      this.feedback.regionDistrict.isValid = true; this.feedback.regionDistrict.text = '';
 
-      if (!this.email) {
-        emailFeedback.isValid = false;
-        emailFeedback.text = '이메일을 입력해주세요.';
-      } else if (!emailPattern.test(this.email)) {
-        emailFeedback.isValid = false;
-        emailFeedback.text = '@을 포함한 뒷부분을 확인해주세요.';
-      } else {
-        emailFeedback.isValid = true;
-        emailFeedback.text = '';
+      if (!this.form.additionalInfoAgreed) return true; // 비동의면 통과
+
+      let ok = true;
+      if (!this.form.job) {
+        this.feedback.job.isValid = false;
+        this.feedback.job.text = '직업을 선택해주세요.';
+        ok = false;
       }
-      if (!this.password) {
-        passwordFeedback1.isValid = false;
-        passwordFeedback1.text = '비밀번호를 입력해 주세요.';
-      } else if (this.password.length < 8 || this.password.length > 16) {
-        passwordFeedback1.isValid = false;
-        passwordFeedback1.text = '8 ~ 16자리로 입력해주세요.';
-      } else {
-        passwordFeedback1.isValid = true;
-        passwordFeedback1.text = '';
+      if (!this.form.region.state && !this.form.region.district) {
+        this.feedback.regionState.isValid = false;
+        this.feedback.regionDistrict.isValid = false;
+        this.feedback.regionState.text = '지역를 선택해주세요.';
+        ok = false;
+      }
+      return ok;
+    },
+    isValidate({ checkEmailPassword = true } = {}) {
+      // 필요한 키만 초기화
+      const reset = (k) => { this.feedback[k].isValid = true; this.feedback[k].text = ''; };
+      ['email','password','passwordConfirm','job','regionState','regionDistrict']
+        .forEach(k => this.feedback[k] && reset(k));
+
+      // 1) 이메일/비번 검증 (옵션)
+      if (checkEmailPassword) {
+        const emailPattern =
+          /^([\w._-])*[a-zA-Z0-9]+([\w._-])*([a-zA-Z0-9])+([\w._-])+@([\w_-])*([a-zA-Z0-9]+\.)+[a-zA-Z0-9]{2,8}$/;
+
+        if (!this.email) {
+          this.feedback.email.isValid = false;
+          this.feedback.email.text = '이메일을 입력해주세요.';
+        } else if (!emailPattern.test(this.email)) {
+          this.feedback.email.isValid = false;
+          this.feedback.email.text = '@을 포함한 뒷부분을 확인해주세요.';
+        }
+
+        if (!this.password) {
+          this.feedback.password.isValid = false;
+          this.feedback.password.text = '비밀번호를 입력해 주세요.';
+        } else if (this.password.length < 8 || this.password.length > 16) {
+          this.feedback.password.isValid = false;
+          this.feedback.password.text = '8 ~ 16자리로 입력해주세요.';
+        }
+
+        if (!this.passwordConfirm) {
+          this.feedback.passwordConfirm.isValid = false;
+          this.feedback.passwordConfirm.text = '비밀번호 확인을 입력해 주세요.';
+        } else if (this.password !== this.passwordConfirm) {
+          this.feedback.passwordConfirm.isValid = false;
+          this.feedback.passwordConfirm.text = '비밀번호가 일치하는지 확인해주세요.';
+        }
       }
 
-      if (!this.passwordConfirm) {
-        passwordFeedback2.isValid = false;
-        passwordFeedback2.text = '비밀번호 확인을 입력해 주세요.';
-      } else if (this.password !== this.passwordConfirm) {
-        passwordFeedback2.isValid = false;
-        passwordFeedback2.text = '비밀번호가 일치하는지 확인해주세요.';
-      } else {
-        passwordFeedback2.isValid = true;
-        passwordFeedback2.text = '';
+      // 2) ✅ 추가정보 검증 (체크박스 켜진 경우는 소셜/이메일 공통 필수)
+      if (this.form.additionalInfoAgreed) {
+        if (!this.form.job) {
+          this.feedback.job.isValid = false;
+          this.feedback.job.text = '직업을 선택해주세요.';
+        }
+        if (!this.form.region.state && !this.form.region.district) {
+          this.feedback.regionState.isValid = false;
+          this.feedback.regionDistrict.isValid = false;
+          this.feedback.regionState.text = '지역을 선택해주세요.';
+        }
       }
 
-      // region 검증
-      // if (!this.form.region.state) {
-      //   this.feedback.region.isValid = false;
-      //   this.feedback.region.text = '시/도를 선택해주세요.';
-      // }
-      // else if (!this.form.region.district) {
-      //   this.feedback.region.isValid = false;
-      //   this.feedback.region.text = '시/군/구를 선택해주세요.';
-      // }
-
-      return isClearForm();
+      // 하나라도 false면 실패
+      return Object.values(this.feedback).every(v => v.isValid);
     },
     async showTerm(target) {
       this.termTarget = target;
@@ -606,9 +639,27 @@ p {
 }
 .region-input{
   .error-msg {
-    margin-top: 0.8rem;
-    font-size: 1.4rem;
     color: var(--color-u-error);
+    font-size: 1.4rem;
+    font-weight: 500;
+    line-height: 160%;
+    letter-spacing: 0.25px;
+    text-align: left;
+    margin-top: 0.7rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .region-input{
+    .error-msg {
+      color: var(--color-u-error);
+      font-size: 1.2rem;
+      font-weight: 500;
+      line-height: 160%;
+      letter-spacing: 0.25px;
+      text-align: left;
+      margin-top: 0.5rem;
+    }
   }
 }
 

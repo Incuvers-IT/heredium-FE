@@ -82,6 +82,7 @@ export default {
           isMarketingReceive: false,
           isLocalResident: false,
           additionalInfoAgreed: false,
+          issueMembershipCoupons: true,
         });
 
       } catch (err) {
