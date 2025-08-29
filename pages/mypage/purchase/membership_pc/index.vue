@@ -651,16 +651,16 @@ export default {
   align-items: center !important;
 }
 .show_mileage {
+  --row-height: 24px;
+
   display: flex;
   flex-direction: column;
-  gap: 5rem;
+  gap: 4.5rem;
   padding-left: 30px;
-  margin-top: 30px;
-  margin-left: 40px;
+  margin-top: 25px;
+  margin-left: 60px;
   font-weight: bold;
   font-size: 16px;
-  text-align: right;
-  align-items: center;
 }
 .mileage-section {
   width: 100%;

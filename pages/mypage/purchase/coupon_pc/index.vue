@@ -86,7 +86,6 @@
             <div>소멸 예정 쿠폰</div>
           </div>
           <div class="show_coupon">
-            <!-- 쿠폰 조회로 수정 필요 -->
             <div class="coupon_total">
               <span style="font-size: 28px"> {{ totalCoupons }}</span>
             </div>
@@ -642,11 +641,13 @@ export default {
   margin-top: 30px;
 }
 .show_coupon {
+  --row-height: 24px;
+
   display: flex;
   flex-direction: column;
-  gap: 5rem;
+  gap: 4.5rem;
   padding-left: 30px;
-  margin-top: 30px;
+  margin-top: 25px;
   margin-left: 60px;
   font-weight: bold;
   font-size: 16px;
