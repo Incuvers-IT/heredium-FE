@@ -561,9 +561,8 @@ export default {
   flex-direction: row;
   align-items: flex-start;
 
-  width: 90%;
+  width: 100%;
   height: 100%;
-  max-height: 300px;
   padding: 2rem;
   margin-top: 2rem;
   border: 1px solid #e6e6e6;
@@ -648,23 +647,23 @@ export default {
   gap: 5rem;
   padding-left: 30px;
   border-left: 1px solid #ccc;
-  margin-top: 20px;
+  margin-top: 30px;
+  align-items: center !important;
 }
 .show_mileage {
   display: flex;
   flex-direction: column;
   gap: 5rem;
   padding-left: 30px;
-  margin-top: 20px;
+  margin-top: 30px;
   margin-left: 40px;
   font-weight: bold;
   font-size: 16px;
   text-align: right;
+  align-items: center;
 }
 .mileage-section {
-  width: 90%;
-  padding-left: 12px;
-  padding-right: 12px;
+  width: 100%;
   box-sizing: border-box;
 }
 .tabs {
@@ -691,7 +690,7 @@ export default {
   justify-content: space-between;
   flex-wrap: wrap;
   margin-top: 1.5rem;
-  margin-bottom: 3.5rem;
+  margin-bottom: 1.5rem;
   padding: 8px 0;
   gap: 4px;
 }
@@ -737,7 +736,7 @@ export default {
   cursor: pointer;
 }
 .mileage-table {
-  width: 90%;
+  width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
 

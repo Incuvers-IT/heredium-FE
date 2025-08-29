@@ -16,7 +16,7 @@
           <img
             v-if="imageSrcByCode(dataMembership.code)"
             :src="imageSrcByCode(dataMembership.code)"
-            style="width: 48px; height: 48px"
+            style="width: 40px; height: 40px"
             alt="membership icon"
           />
           <span class="name-membership">

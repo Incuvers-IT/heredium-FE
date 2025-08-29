@@ -81,23 +81,23 @@
               </div>
             </div>
           </div>
-          <div class="mileage_summary">
+          <div class="coupon_summary">
             <div>현재 나의 쿠폰</div>
             <div>소멸 예정 쿠폰</div>
           </div>
-          <div class="show_mileage">
+          <div class="show_coupon">
             <!-- 쿠폰 조회로 수정 필요 -->
-            <div class="mileage_total">
+            <div class="coupon_total">
               <span style="font-size: 28px"> {{ totalCoupons }}</span>
             </div>
-            <div class="mileage_expire">
+            <div class="coupon_expire">
               <span style="font-size: 28px"> {{ expiringCoupons }}</span>
             </div>
           </div>
         </div>
       </div>
       <!-- Tab UI -->
-      <div class="mileage-section">
+      <div class="coupon-section">
         <!-- 탭 버튼 영역 -->
         <div class="tabs">
           <button
@@ -553,7 +553,7 @@ export default {
   flex-direction: row;
   align-items: flex-start;
 
-  width: 90%;
+  width: 100%;
   height: 100%;
   max-height: 300px;
   padding: 2rem;
@@ -634,28 +634,26 @@ export default {
   display: flex;
   flex-direction: row;
 }
-.mileage_summary {
+.coupon_summary {
   display: flex;
   flex-direction: column;
   gap: 5rem;
   padding-left: 30px;
   border-left: 1px solid #ccc;
-  margin-top: 20px;
+  margin-top: 30px;
 }
-.show_mileage {
+.show_coupon {
   display: flex;
   flex-direction: column;
   gap: 5rem;
   padding-left: 30px;
-  margin-top: 20px;
+  margin-top: 30px;
   margin-left: 60px;
   font-weight: bold;
   font-size: 16px;
 }
-.mileage-section {
-  width: 90%;
-  padding-left: 12px;
-  padding-right: 12px;
+.coupon-section {
+  width: 100%;
   box-sizing: border-box;
 }
 .tabs {
@@ -682,7 +680,7 @@ export default {
   justify-content: space-between;
   flex-wrap: wrap;
   margin-top: 1.5rem;
-  margin-bottom: 3.5rem;
+  margin-bottom: 1.5rem;
   padding: 8px 0;
   gap: 4px;
 }
@@ -783,6 +781,10 @@ export default {
     padding: auto;
   }
 }
+// ::v-deep(.coupon-card) {
+//   border-bottom: 1px solid #e6e6e6;
+//   margin-bottom: 0;
+// }
 ::v-deep(.pagination) {
   margin-top: 2.6rem !important;
 }
