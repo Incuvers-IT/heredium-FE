@@ -2,6 +2,30 @@
   <transition name="fade">
     <div v-if="isMounted">
       <HeaderBase />
+
+      <!-- ✅ 앱에서도 동일한 모달 플로우 실행 -->
+      <MarketingPop
+        v-if="isShowMarketingPop && userInfo?.marketingPending && !userInfo?.birthDate"
+        :is-show="isShowMarketingPop"
+        @close="handleMarketingSkipped"
+      />
+
+      <NotificationModal
+        v-if="showNotificationModal && userInfo?.marketingPending && notificationCode !== null"
+        :is-show="showNotificationModal"
+        :code="notificationCode"
+        :can-next="notificationCanNext"
+        @next="openAdditionalInfo"
+        @close="showNotificationModal = false"
+      />
+
+      <AdditionalInfoModal
+        v-if="showAdditionalInfoModal && userInfo?.marketingPending && userInfo?.birthDate"
+        :is-show="showAdditionalInfoModal"
+        @close="showAdditionalInfoModal = false"
+        @issued="onCouponIssued"
+      />
+
       <client-only>
         <section>
           <Swiper ref="mainSwiper" :options="mainSwiperOption" class="main-slider" @slideChange="onMainSlideChange">
@@ -69,18 +93,53 @@
 import HeaderBase from '~/components/user/sections/HeaderBase.vue';
 import UQRModal from '~/components/user/modal/UQRModal.vue';
 import UPopupModal from '~/components/user/modal/UPopupModal.vue';
+import MarketingPop from '~/components/user/modal/UMarketingModal.vue'
+import NotificationModal from '~/components/user/modal/NotificationModal.vue'
+import AdditionalInfoModal from '~/components/user/modal/AdditionalInfoModal.vue'
 
 export default {
   name: 'AppPage',
-  components: { UPopupModal, UQRModal, HeaderBase },
+  components: { UPopupModal, UQRModal, HeaderBase, MarketingPop, NotificationModal, AdditionalInfoModal },
   layout: 'none',
-  async asyncData({ $axios, store }) {
-    const isLogged = !!store.getters['service/auth/getAccessToken'];
-    const appData = await $axios.$get('/user/common/home/app');
-    const ticketList = isLogged ? await $axios.$get('/user/account/tickets/enabled') : [];
+  async asyncData({ $axios, query, redirect, req, store }) {
+      const isLogged = !!store.getters['service/auth/getAccessToken'];
+      const appData = await $axios.$get('/user/common/home/app');
+      const ticketList = isLogged ? await $axios.$get('/user/account/tickets/enabled') : [];
 
-    return { isLogged, appData, ticketList };
-  },
+      // ▼▼ 여기부터: index.vue와 동일한 EncodeData 처리
+      let userPhoneInfo = null;
+
+      const currentUser = store.getters['service/auth/getUserInfo'];
+      const needsAuth = query.EncodeData && !currentUser?.birthDate;
+
+      if (needsAuth) {
+        try {
+          userPhoneInfo = await $axios
+            .$get('/nice/decrypt', { params: { encodeData: query.EncodeData } })
+            .catch(() => { redirect('/app'); });
+
+          const payload = {
+            gender: userPhoneInfo.gender,
+            birthDate: userPhoneInfo?.birthDate,
+            phone: userPhoneInfo.mobileNo,
+            isLocalResident: false,
+            isMarketingReceive: false,
+            marketingPending: true,
+            additionalInfoAgreed: false,
+          };
+          const updated = await $axios.$put('/user/account/info', payload);
+          store.commit('service/auth/setUserInfo', updated);
+
+          // (선택) EncodeData 제거하고 현재 경로 유지하고 싶으면:
+          // redirect({ path: '/app', query: {} });
+        } catch {
+          redirect('/app');
+        }
+      }
+      // ▲▲ 여기까지
+
+      return { isLogged, appData, ticketList, userPhoneInfo };
+    },
   data() {
     return {
       isMounted: false,
@@ -109,7 +168,14 @@ export default {
       ticketList: null,
       selectedTicketIndex: null,
       isShowQRModal: false,
-      isShowPopup: false
+      isShowPopup: false,
+      isShowMarketingPop: false,
+      showNotificationModal: false,
+      showAdditionalInfoModal: false,
+      showCouponModal: false,          // (쿠폰 모달 쓰면)
+      notificationCode: null,
+      notificationCanNext: true,
+      issuedCoupons: [],
     };
   },
   computed: {
@@ -118,6 +184,30 @@ export default {
     },
     selectedTicket() {
       return this.ticketList[this.selectedTicketIndex] || null;
+    },
+    userInfo() {
+      return this.$store.getters['service/auth/getUserInfo']
+    }
+  },
+  watch: {
+    userInfo: {
+      immediate: true,
+      handler(u) {
+        if (u && u.marketingPending === false) {
+          this.isShowMarketingPop = false;
+          this.showNotificationModal = false;
+          this.showAdditionalInfoModal = false;
+          return;
+        }
+        // birthDate 미입력 + marketingPending이면 1단계 마케팅 팝업
+        if (u?.marketingPending && !u?.birthDate) {
+          this.isShowMarketingPop = true
+        }
+        // birthDate가 방금 세팅되어 들어온 경우엔 바로 2단계(알림) → 3단계(추가정보)로 이어짐
+        if (u?.marketingPending && u?.birthDate && this.notificationCode === null) {
+          this.handlePhoneInfo()
+        }
+      }
     }
   },
   mounted() {
@@ -143,7 +233,34 @@ export default {
     },
     onMainSlideChange() {
       this.currentMainSlide = this.mainSwiper.realIndex + 1;
-    }
+    },
+    onCouponIssued(coupons) {
+      this.issuedCoupons = coupons;
+      this.showAdditionalInfoModal = false;
+      this.showCouponModal = true;   // 쓰면 표시
+    },
+
+    handleMarketingSkipped() {
+      this.isShowMarketingPop   = false;
+      this.notificationCanNext  = false;  // 다음 버튼 숨김
+      this.notificationCode     = 1;
+      this.showNotificationModal = true;
+    },
+
+    openAdditionalInfo() {
+      this.showNotificationModal = false;
+      this.showAdditionalInfoModal = true;
+    },
+
+    // 생년월일 기반 코드 결정(미성년자: 3, 성인: 1)
+    handlePhoneInfo() {
+      const birth = this.$dayjs(this.userInfo?.birthDate, 'YYYY-MM-DD');
+      const today = this.$dayjs();
+      let age = today.year() - birth.year();
+      if (today.isBefore(birth.add(age, 'year'))) age--;
+      this.notificationCode = age < 19 ? 3 : 1;
+      this.showNotificationModal = true;
+    },
   }
 };
 </script>

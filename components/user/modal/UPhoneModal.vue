@@ -41,8 +41,11 @@ export default {
   methods: {
     async check() {
       const { protocol, host } = window.location
-      const returnUrl = `${protocol}//${host}/`
-      const errorUrl  = `${protocol}//${host}/?failed=true`
+
+      const isApp = this.$store.state.deviceInfo.isApp
+      const base  = `${protocol}//${host}${isApp ? '/app' : '/'}`
+      const returnUrl = `${base}`
+      const errorUrl  = `${base}?failed=true`
 
       try {
         const res = await this.$axios.$get('/nice/encrypt', {

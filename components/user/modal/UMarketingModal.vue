@@ -151,7 +151,6 @@ export default {
           additionalInfoAgreed: false,
           issueMembershipCoupons: true,
         });
-
       } catch (err) {
         console.warn('마케팅 스킵 처리 실패', err);
       } finally {

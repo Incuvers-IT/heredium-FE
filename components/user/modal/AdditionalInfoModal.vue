@@ -285,9 +285,6 @@ export default {
           additionalInfoAgreed: false,
           issueMembershipCoupons: true,
         });
-
-         // ✅ 스토어 반영 + 부모에 통지(스냅샷)
-        this.$store.commit('service/auth/setUserInfo', res);
         this.$emit('saved', res);
       } catch (err) {
         console.warn('마케팅 스킵 처리 실패', err);
