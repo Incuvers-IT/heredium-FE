@@ -111,7 +111,7 @@
         </div>
         <!-- 기간 필터 영역 -->
         <div class="filter-area">
-          <div class="filter-buttons">
+          <div class="filter-buttons" style="display: flex; width: 50%;">
             <button
               v-for="option in filterOptions"
               :key="option"
@@ -120,14 +120,13 @@
             >
               {{ option }}
             </button>
+             <!-- 사용자 지정 기간 설정 -->
+            <div class="date-range" style="width: 40%; margin-left: 2rem;">
+              <UDatepicker v-model="startDate" :max="endDate" />
+              <span>~</span>
+              <UDatepicker v-model="endDate" :min="startDate" />
+            </div>
           </div>
-          <!-- 사용자 지정 기간 설정 -->
-          <div class="date-range">
-            <UDatepicker v-model="startDate" :max="endDate" style="width: 175px" />
-            <span>~</span>
-            <UDatepicker v-model="endDate" :min="startDate" style="width: 175px" />
-          </div>
-
           <button class="filter-submit" @click="applyPeriodFilter">조회</button>
         </div>
 
@@ -686,7 +685,7 @@ export default {
 }
 .filter-area button {
   flex: 1;
-  min-width: 90px;
+  min-width: 110px;
   padding: 6px 12px;
   text-align: center;
   border: 1px solid #cccccc;
