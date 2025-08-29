@@ -729,7 +729,7 @@ export default {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
-  border-top: 2px solid #111111;
+  border-top: 1px solid #111111;
 
   th,
   td {
