@@ -77,7 +77,7 @@ export default {
     async skipMarketing() {
       try {
         // 마케팅 동의 안 함(0)
-        await this.$axios.$put('/user/account/marketing', {
+        const res = await this.$axios.$put('/user/account/marketing', {
           marketingPending: false,
           isMarketingReceive: false,
           isLocalResident: false,
@@ -85,6 +85,7 @@ export default {
           issueMembershipCoupons: true,
         });
 
+        this.$store.commit('service/auth/setUserInfo', res);
       } catch (err) {
         console.warn('마케팅 스킵 처리 실패', err);
       } finally {
