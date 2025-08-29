@@ -5,7 +5,7 @@
         <div class="head">
           <h3 class="title">{{ title }}</h3>
           <button type="button" class="close-btn" @click="skipMarketing">
-            <i class="ic-close" />
+            <i class="ic-close"></i>
           </button>
         </div>
         <div class="body">

@@ -13,8 +13,7 @@
           height="45"
           style="margin-bottom: 2.2rem; margin-top: 3.0rem;"
         />
-        <h2 style="margin-bottom: 1.2rem;">회원가입하고</h2>
-        <h2>더 깊은 예술을 경험해보세요!</h2>
+        <div><h2 style="margin-bottom: 1.2rem;">회원가입하고<br/><br/>더 깊은 예술을 경험해보세요!</h2></div>
       </div>
       <div class="pc progress-bar">
         <div class="fill"></div>
@@ -163,7 +162,6 @@ h2 {
   font-size: 2.7rem;
   font-weight: 700;
   text-align: center;
-  line-height: 0rem;
 }
 
 p {
