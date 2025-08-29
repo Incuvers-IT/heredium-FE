@@ -9,11 +9,23 @@
           <p>
             전체 <strong>{{ listData?.content.length }}</strong>
           </p>
+           <!-- PC 전용 -->
           <USelect
             v-if="yearOptions.length > 0"
             v-model="cloneQueryOptions.year"
-            class="small"
+            w-size="small"
             :option-list="yearOptionList"
+            class="only-pc"
+            @change="onYearCount()"
+          />
+
+          <!-- 모바일 전용 -->
+          <USelect
+            v-if="yearOptions.length > 0"
+            v-model="cloneQueryOptions.year"
+            w-size="xsmall"
+            :option-list="yearOptionList"
+            class="only-mobile"
             @change="onYearCount()"
           />
         </div>
@@ -320,7 +332,7 @@ h1 {
 
   .select-area {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
 
     p {

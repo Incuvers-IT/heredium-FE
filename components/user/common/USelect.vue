@@ -139,6 +139,7 @@ export default {
   methods: {
     calcWidth() {
       switch (this.wSize) {
+        case 'xsmall':  this.width = '15rem'; break;
         case 'small':  this.width = '25rem'; break;
         case 'full':   this.width = '100%'; break;
         default:       this.width = '40rem'; break;
