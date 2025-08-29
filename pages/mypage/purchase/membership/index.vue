@@ -668,9 +668,9 @@ export default {
   flex-wrap: wrap;
   width: 100%;
   margin-top: 1.5rem;
-  margin-bottom: 3.5rem;
+  margin-bottom: 1.5rem;
   padding: 8px 0;
-  gap: 5px;
+  gap: 10px;
 }
 .filter-buttons {
   display: flex;
